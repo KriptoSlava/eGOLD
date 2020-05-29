@@ -8,6 +8,7 @@ header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
 if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
 if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}'; exit;}
+if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}'; exit;}
 $json_arr['timer_start']=microtime(true);
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 $timer_start= $json_arr['timer_start'];
