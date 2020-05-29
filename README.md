@@ -28,4 +28,4 @@ $noda_trust[]= "185.50.26.220";
 * Нужно обязательно посмотреть перед загрузкой архива «eGOLD.rar»
 
 ---
-_**Может распространяться согласно лицензии GNU GPL: https://ru.wikipedia.org/wiki/GNU_General_Public_License**_
+_**Может свободно использоваться и распространяться согласно лицензии GNU GPL: https://ru.wikipedia.org/wiki/GNU_General_Public_License**_
