@@ -9510,7 +9510,7 @@ function saveTypeWallet(wallet,ip,id,password){
 			//если запрос со страницы настроек на задание пароля
 			if(id=='savePass'){
 				if(return_view==1){
-					if(password && typeof(json_typewallet.usersemailup)!= undefined && json_typewallet.usersemailup!= undefined && typeof(json_typewallet.email_domain)!= undefined && json_typewallet.email_domain!= undefined){
+					if(password && typeof(json_typewallet.usersemailup)!= undefined && json_typewallet.usersemailup>=0){
 						localStorage.setItem('eGOLD_password',password);
 						successAllDisplay();
 					} else {
@@ -10071,6 +10071,7 @@ $('.saveContact').click(function() {
 function page_settings(){
 	trueInput('.page-settings .passwordSettings');
 	trueInput('#IPnodaSettings');
+	$('.passwordSettings').val(typeof(localStorage.getItem('eGOLD_password'))!= undefined && localStorage.getItem('eGOLD_password')?localStorage.getItem('eGOLD_password'):'');
 }
 //получение высоты кошелька
 function wallet_height(wallet){
