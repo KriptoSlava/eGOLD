@@ -4795,6 +4795,21 @@ wow
 .new-key {
         display: flex;
 }
+.attention-text{
+	color:red;
+	font-weight: bold;
+	text-align: center;
+	position: static;
+	width: 100%;
+	max-width: 550px;
+	flex-direction: column;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	float: none;
+	margin-bottom: 35px;
+}
   .footer-page-referral,
   .footer-transactions,
   .header-login .row-management,
@@ -7210,6 +7225,7 @@ body {
       justify-content: space-between;
       margin: 0 auto
   }
+	.page-key-change .attention-text.hide,
   .page-key-change .new-key.hide,
   .page-key-change .new-wallet.hide,
   .page-key-change .result-change.hide,
@@ -7712,6 +7728,7 @@ viewBox="0 0 40532.6 40532.69"
           <div class="item-4"></div>
           <div class="item-5"></div>
         </div>
+				<div class="attention-text hide">ATTENTION!!! <br><br>After changing the Private Key, the old Private Key will stop working and you will not be able to restore it!</div>
         <div class="new-key hide">
           <div class="custom-input">
             <svg class="icon_key_gray">
@@ -9194,7 +9211,8 @@ function genrandpass(type, stop) {
             if (place == 1) {
               $(".page-key-change .result-chang .secretKey").val(password_gen_falcon[0]);
 							$('.page-key-change .preloader-container').addClass('hide');
-              $('.new-key')[0].classList.remove('hide');
+              $('.page-key-change .new-key')[0].classList.remove('hide');
+							$('.page-key-change .attention-text')[0].classList.remove('hide');
               document.body.style.overflow = '';
             }
             if (place == 2) {
@@ -10279,6 +10297,7 @@ function clear_newkey_and_newwallet(){
 	t = 0;
 	abort = 0;
 	place = 0;
+	$('.attention-text').addClass('hide');
 	$('.new-key').addClass('hide');
 	$('.new-wallet').addClass('hide');
 	$('.result-chang').css('display', 'none');
@@ -10306,6 +10325,7 @@ $('.send-key-change').click(function(){
 		else if(check){
 			$(".page-key-change .new-key .secretKey").val('');
 			$('.new-key').addClass('hide');
+			$('.attention-text').addClass('hide');
 			$('.result-chang').css('display', 'block');
 			$('.page-key-change').find('.result-chang').removeClass('hide').addClass('anim-show');
 		}
