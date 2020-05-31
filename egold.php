@@ -532,12 +532,12 @@ if($stop!=1){
             } else {
               query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+1 WHERE `wallet`='".$sqltbl_arr['nodawallet']."';");
             }
-						query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`=`value`+1 WHERE `name`='transactionscount';");
-						if(!(mysqli_affected_rows($mysqli_connect)>=1))query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` (`name`, `value`) VALUES ('transactionscount', '1');");
             query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=1 WHERE `date`= '".$sqltbl_arr['date']."' and `hash`= '".$sqltbl_arr['hash']."' and `wallet`= '".$sqltbl_arr['wallet']."';");
             if(mysqli_affected_rows($mysqli_connect)>=1){
               if($sqltbl_arr['nodause']==$noda_ip){
                 query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=1, `date`='".$sqltbl_arr['date']."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and (`nodatrue`!=1 or `date`<'".$sqltbl_arr['date']."'-9*24*60*60);");
+								query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`=`value`+1 WHERE `name`='transactionscount';");
+								if(!(mysqli_affected_rows($mysqli_connect)>=1))query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` (`name`, `value`) VALUES ('transactionscount', '1');");
               }else query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=0 WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
               if(mysqli_affected_rows($mysqli_connect)>=1){}
             }
