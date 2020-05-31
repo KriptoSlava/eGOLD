@@ -1,4 +1,4 @@
-<?php //v1.1
+<?php 
 ini_set("memory_limit", "2048M");
 // ini_set('error_reporting', E_ALL); 
 // ini_set('display_errors', 0);
@@ -255,7 +255,7 @@ $type['signreg']=$type['sign'];
 $type['date']="0-9";
 $type['dateto']=$type['date'];
 $type['dateview']="1";
-$type['noda']="0-9abcdef\.\:";
+$type['noda']="0-9a-z\.\:";
 $type['nodawallet']=$type['wallet'];
 $type['nodause']=$type['noda'];
 $type['balancestart']="0-9";
@@ -373,9 +373,6 @@ if(isset($sqltbl['now']) && $sqltbl['now']){
     query_bd("SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`='".$noda_ip."' ORDER BY `date` DESC LIMIT 1;");
     if(isset($sqltbl['wallet']) && $sqltbl['wallet'])$json_arr['owner']= gold_wallet_view($sqltbl['wallet']);
     else $json_arr['owner']=gold_wallet_view($noda_wallet);
-		query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='transactionscount' LIMIT 1;");
-    if(isset($sqltbl['value']) && $sqltbl['value'])$json_arr['transactionscount']= $sqltbl['value'];
-    else $json_arr['transactionscount']= 0;
     query_bd("SELECT `date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `view`>0 ORDER BY `date` DESC LIMIT 1;");
     if(isset($sqltbl['date']) && $sqltbl['date'])$json_arr['datelasttransaction']= $sqltbl['date'];
     else $json_arr['datelasttransaction']= 0;
@@ -532,8 +529,6 @@ if($stop!=1){
             } else {
               query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+1 WHERE `wallet`='".$sqltbl_arr['nodawallet']."';");
             }
-						query_bd("UPDATE `kjshTdfer_settings` SET `value`=`value`+1 WHERE `name`='transactionscount';");
-						if(!(mysqli_affected_rows($mysqli_connect)>=1))query_bd("INSERT INTO `kjshTdfer_settings` (`name`, `value`) VALUES ('transactionscount', '1');");
             query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=1 WHERE `date`= '".$sqltbl_arr['date']."' and `hash`= '".$sqltbl_arr['hash']."' and `wallet`= '".$sqltbl_arr['wallet']."';");
             if(mysqli_affected_rows($mysqli_connect)>=1){
               if($sqltbl_arr['nodause']==$noda_ip){
@@ -1161,7 +1156,6 @@ if($stop!=1 && $request['type']=="history"){
 		if(isset($request['date'])) $where.= " and `date`>= '".$request['date']."'";
 		if(isset($request['dateto'])) $where.= " and `date`< '".$request['dateto']."'";
 		if(isset($request['height']) && (isset($request['wallet']) or isset($request['recipient']))) $where.= " and `height`>= '".$request['height']."'";
-		if(isset($request['noda'])) $where.= " and `nodause`= '".$request['noda']."'";
 		if(isset($request['order']) && $request['order']=='asc') $order= "ASC";else $order= "DESC";
 		if(isset($_POST['history_exception'])){
 			$_POST['history_exception']= json_decode($_POST['history_exception'],true);
