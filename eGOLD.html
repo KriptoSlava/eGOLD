@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eGOLD</title>
+  <title>eGOLD v1.2</title>
   <script>
     !function(e,t){if("function"==typeof define&&define.amd)define(["module","exports"],t);else if("undefined"!=typeof exports)t(module,exports);else{var n={exports:{}};t(n,n.exports),e.autosize=n.exports}}(this,function(e,t){"use strict";var n,o,p="function"==typeof Map?new Map:(n=[],o=[],{has:function(e){return-1<n.indexOf(e)},get:function(e){return o[n.indexOf(e)]},set:function(e,t){-1===n.indexOf(e)&&(n.push(e),o.push(t))},delete:function(e){var t=n.indexOf(e);-1<t&&(n.splice(t,1),o.splice(t,1))}}),c=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){c=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(r){if(r&&r.nodeName&&"TEXTAREA"===r.nodeName&&!p.has(r)){var e,n=null,o=null,i=null,d=function(){r.clientWidth!==o&&a()},l=function(t){window.removeEventListener("resize",d,!1),r.removeEventListener("input",a,!1),r.removeEventListener("keyup",a,!1),r.removeEventListener("autosize:destroy",l,!1),r.removeEventListener("autosize:update",a,!1),Object.keys(t).forEach(function(e){r.style[e]=t[e]}),p.delete(r)}.bind(r,{height:r.style.height,resize:r.style.resize,overflowY:r.style.overflowY,overflowX:r.style.overflowX,wordWrap:r.style.wordWrap});r.addEventListener("autosize:destroy",l,!1),"onpropertychange"in r&&"oninput"in r&&r.addEventListener("keyup",a,!1),window.addEventListener("resize",d,!1),r.addEventListener("input",a,!1),r.addEventListener("autosize:update",a,!1),r.style.overflowX="hidden",r.style.wordWrap="break-word",p.set(r,{destroy:l,update:a}),"vertical"===(e=window.getComputedStyle(r,null)).resize?r.style.resize="none":"both"===e.resize&&(r.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),a()}function s(e){var t=r.style.width;r.style.width="0px",r.offsetWidth,r.style.width=t,r.style.overflowY=e}function u(){if(0!==r.scrollHeight){var e=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&t.push({node:e.parentNode,scrollTop:e.parentNode.scrollTop}),e=e.parentNode;return t}(r),t=document.documentElement&&document.documentElement.scrollTop;r.style.height="",r.style.height=r.scrollHeight+n+"px",o=r.clientWidth,e.forEach(function(e){e.node.scrollTop=e.scrollTop}),t&&(document.documentElement.scrollTop=t)}}function a(){u();var e=Math.round(parseFloat(r.style.height)),t=window.getComputedStyle(r,null),n="content-box"===t.boxSizing?Math.round(parseFloat(t.height)):r.offsetHeight;if(n<e?"hidden"===t.overflowY&&(s("scroll"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight):"hidden"!==t.overflowY&&(s("hidden"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight),i!==n){i=n;var o=c("autosize:resized");try{r.dispatchEvent(o)}catch(e){}}}}function i(e){var t=p.get(e);t&&t.destroy()}function d(e){var t=p.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return r(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],d),e}),t.default=l,e.exports=t.default});
   <!-- Копирование в буфер обмена -->
@@ -5240,7 +5240,7 @@ wow
       cursor: pointer;
       background: none;
       border-radius: 25px;
-      margin-right: 20px
+      margin-right: 8px
   }
   .header-login .row-info .block-wallet button svg {
       fill: #e7af27
@@ -5249,10 +5249,13 @@ wow
       margin-right: 0
   }
   @media screen and (max-width:600px) {
-      .header-login .row-info .block-wallet button {
-          width: 40px;
-          height: 40px
-      }
+		.header-login .row-info .block-wallet button {
+				width: 40px;
+				height: 40px
+		}
+		.header-login .row-info .block-wallet button {
+			margin-right: 0px;
+		}
   }
   .header-login .row-info .block-wallet button svg {
       width: 37px;
@@ -5263,7 +5266,7 @@ wow
       margin-bottom: 12px
   }
 	.header-login .row-management nav ul li {
-		width: 90px;
+		width: 100px;
 		height: 50px;
 		cursor: pointer;
 		border: 2px solid #e6e6e6;
@@ -5272,13 +5275,13 @@ wow
   }
 	@media screen and (max-width:1480px) {
 		.header-login .row-management nav ul li {
-			width: 80px;
+			width: 95px;
 			margin-right: 10px;
 		}
 	}
 	@media screen and (max-width:1380px) {
 		.header-login .row-management nav ul li {
-			width: 65px;
+			width: 75px;
 			margin-right: 10px;
 		}
 	}
@@ -5290,7 +5293,7 @@ wow
 				margin-bottom: 15px
 		}
 		.header-login .row-management nav ul li {
-			width: 104px;
+			width: 120px;
 			margin-right: 20px;
 		}
   }
@@ -5307,7 +5310,7 @@ wow
   }
   @media screen and (max-width:550px) {
       .header-login .row-management nav ul li {
-          width: 50px;
+          width: 75px;
           height: 50px;
           margin-right: 5px
       }
@@ -7446,6 +7449,11 @@ button::-moz-focus-inner {
               <use xlink:href="#icon-exit" />
             </svg>
           </button>
+					<button id="page-key-change" type="button" title="Change Key">
+						<svg>
+							<use xlink:href="#menu_4_key_act" />
+						</svg>
+           </button>
           <p class="main_wallet" id="NumOfWall" style="margin-right: 0px;"></p>
           <button id="main_wallet_copy" title="Copy Wallet" type="button" class="btn" style="    margin-right: 0px;" data-clipboard-target="#NumOfWall">
             <svg xmlns="http://www.w3.org/2000/svg" class="Copy" style="width: 47px;height: 47px;" xml:space="preserve" width="49.9997mm" height="49.9998mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
@@ -7496,11 +7504,6 @@ viewBox="0 0 40532.6 40532.69"
             <li id="page-contact" title="Contacts">
               <svg>
                 <use xlink:href="#menu_2_cont_act" />
-              </svg>
-            </li>
-            <li id="page-key-change" title="Change Key">
-              <svg>
-                <use xlink:href="#menu_4_key_act" />
               </svg>
             </li>
             <li id="page-register-wallet" title="Register Wallet">
@@ -8825,7 +8828,7 @@ function button_touch(this_var){
 		this_var.prop("disabled",false);
 	},2000)
 }
-$("button:not(#main_wallet_copy,#page-qr-code,#logut-site,.addContact)").click(function(event){
+$("button:not(#main_wallet_copy,#page-qr-code,#logut-site,.addContact,#page-key-change)").click(function(event){
 	var this_var = $(this);
 	button_touch(this_var);
 })
@@ -9466,7 +9469,7 @@ function saveTypeWallet(wallet,ip,id,password){
 		$.ajax({
 			url: "http://"+ip+"/egold.php",
 			method: 'POST',
-			timeout: 3000,
+			timeout: 5000,
 			async:true,
 			data: "type=wallet&wallet="+wallet+(password?"&password="+method(method(password,128*4),256*4):''),
 			success: function success(data) {
@@ -9519,6 +9522,7 @@ function saveTypeWallet(wallet,ip,id,password){
 			if(id=='saveNode'){
 				if(return_view==1){
 					if(typeof(localStorage.getItem('eGOLD_password'))!= undefined)localStorage.removeItem('eGOLD_password');
+					if(typeof(localStorage.getItem('eGOLD_contacts'))!= undefined)localStorage.removeItem('eGOLD_contacts');
 					$('.page-settings .passwordSettings,.page-settings .blockEmail input').val('');
 					successAllDisplay();
 				} else {
@@ -9531,6 +9535,7 @@ function saveTypeWallet(wallet,ip,id,password){
 					if(password && typeof(json_typewallet.usersemailup)!= undefined && json_typewallet.usersemailup>=0){
 						localStorage.setItem('eGOLD_password',password);
 						successAllDisplay();
+						page_contact();
 					} else {
 						$('.page-settings .passwordSettings,.page-settings .blockEmail input').val('');
 						if(!password)successAllDisplay();//если очистка пароля, то успех
@@ -9549,6 +9554,7 @@ function saveTypeWallet(wallet,ip,id,password){
 				}
 				if(!password){
 					if(typeof(localStorage.getItem('eGOLD_password'))!= undefined)localStorage.removeItem('eGOLD_password');
+					if(typeof(localStorage.getItem('eGOLD_contacts'))!= undefined)localStorage.removeItem('eGOLD_contacts');
 					$('.page-settings .blockEmail input').val('');
 				}
 				if($('.block-list').html())$('.block-list').html('');
@@ -9602,6 +9608,7 @@ $('#saveParamSettingsNotValid').click(function(){
 			$('.passwordSettings').val(password_set);
 			localStorage.setItem('eGOLD_password',password_set);
 			hide_new_password();
+			page_contact();
 		}
 	},1000);
 })
@@ -9634,7 +9641,7 @@ function saveEmailUpDown(){
 		$.ajax({
 			url: "http://"+json_typewallet.noda+"/egold.php",
 			method: 'POST',
-			timeout: 3000,
+			timeout: 5000,
 			async:true,
 			data: "type=email&wallet="+json_typewallet.wallet+"&email="+email+"&up="+$('.page-settings .UP').val().replace(/[^\d]/g, "")+"&down="+$('.page-settings .down').val().replace(/[^\d]/g, "")+(password?"&password="+method(method(password,128*4),256*4):''),
 			success: function success(data) {
@@ -9733,7 +9740,7 @@ function page_transactions(interval){
 		$.ajax({
 			url: "http://"+json_typewallet.noda+"/egold.php",
 			method: 'POST',
-			timeout: 3000,
+			timeout: 5000,
 			async:true,
 			data: url_data,
 			success: function success(data) {
@@ -9760,7 +9767,12 @@ function page_transactions(interval){
 						page_transactions(1);
 						return false;
 					} else {
-						for(var i=0;i<(json_transactions.length-1) && typeof(json_transactions[i].date)!= "undefined";i++) {
+						json_contacts= '';
+						if(typeof(localStorage.getItem('eGOLD_password'))!= undefined && typeof(localStorage.getItem('eGOLD_contacts'))!= undefined && localStorage.getItem('eGOLD_password') && localStorage.getItem('eGOLD_contacts')){
+							json_contacts= JSON.parse(localStorage.getItem('eGOLD_contacts'));
+						}
+						for(var i=0;i<(json_transactions.length-1) && typeof(json_transactions[i].date)!= "undefined";i++){
+							wallet_to_arr_name= '';
 							new_transaction = (json_transactions[i].checkhistory == 0) ? 'orange' : 'black';
 							st= (json_transactions[i].checkhistory == 0) ? '#e7af27': '#7b7b7b';
 							date_to= parseInt(json_transactions[i].date)-offset*60;
@@ -9770,13 +9782,29 @@ function page_transactions(interval){
 							json_transactions[i].wallet= json_transactions[i].wallet.replace(/[^\d]/ig,'');
 							if(json_transactions[i].wallet!=json_typewallet.wallet){
 								wallet_to_arr= (json_transactions[i].wallet == '1') ? 'eGOLD' : 'G-'+json_transactions[i].wallet.substr(0,4)+'-'+json_transactions[i].wallet.substr(4,5)+'-'+json_transactions[i].wallet.substr(9,4)+'-'+json_transactions[i].wallet.substr(13,5);
+								if(json_contacts){
+									wallet_to_arr_name= $.grep(json_contacts, function (element, index) {
+										return element.recipient == json_transactions[i].wallet;
+									});
+									if(wallet_to_arr_name && typeof(wallet_to_arr_name[0])!= "undefined")wallet_to_arr_name= wallet_to_arr_name[0].name;
+									else wallet_to_arr_name='';
+								}
+								if(!wallet_to_arr_name)wallet_to_arr_name=wallet_to_arr;
 								var p= $('.page-transactions .block-list')[0].innerHTML;
-								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p>"+wallet_to_arr+"</p></div><div class='pin' style='color: "+st+";'><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount' style='color: "+st+";'><p >+ "+number_format(parseInt(json_transactions[i].money), 0, '.', ' ')+"</p></div><div class='status rotate-down'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
+								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='pin' style='color: "+st+";'><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount' style='color: "+st+";'><p >+ "+number_format(parseInt(json_transactions[i].money), 0, '.', ' ')+"</p></div><div class='status rotate-down'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
 							}else{
 								json_transactions[i].recipient= json_transactions[i].recipient.replace(/[^\d]/ig,'');
 								wallet_to_arr= (json_transactions[i].recipient == '1') ? 'eGOLD' : 'G-'+json_transactions[i].recipient.substr(0,4)+'-'+json_transactions[i].recipient.substr(4,5)+'-'+json_transactions[i].recipient.substr(9,4)+'-'+json_transactions[i].recipient.substr(13,5);
+								if(json_contacts){
+									wallet_to_arr_name= $.grep(json_contacts, function (element, index) {
+										return element.recipient == json_transactions[i].recipient;
+									});
+									if(wallet_to_arr_name && typeof(wallet_to_arr_name[0])!= "undefined")wallet_to_arr_name= wallet_to_arr_name[0].name;
+									else wallet_to_arr_name='';
+								}
+								if(!wallet_to_arr_name)wallet_to_arr_name=wallet_to_arr;
 								var p= $('.page-transactions .block-list')[0].innerHTML;
-								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p>"+wallet_to_arr+"</p></div><div class='pin' style='color: "+st+";'><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount pay_money' style='color: "+st+";'><p >- "+number_format(parseInt(json_transactions[i].money)+2, 0, '.', ' ')+"</p></div><div class='status rotate-up'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
+								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='pin' style='color: "+st+";'><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount pay_money' style='color: "+st+";'><p >- "+number_format(parseInt(json_transactions[i].money)+2, 0, '.', ' ')+"</p></div><div class='status rotate-up'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
 							}
 						}
 						$('.page-transactions .amount-rows')[0].innerText = json_transactions.length == undefined ? 0 : json_transactions.length-1;
@@ -9787,9 +9815,9 @@ function page_transactions(interval){
 						$('.page-transactions .dateO').click(function(target) {
 							$('.page-transactions .dateSort1').val(target.currentTarget.innerText.trim())
 						})
-						$('.page-transactions .wallet').click(function(target) {
+						$('.page-transactions .wallet p').click(function(target) {
 							hide_send();
-							wallet_to= target.currentTarget.innerText.trim();
+							wallet_to= $(this).attr('wallet');
 							$('.wallet_to').val((wallet_to=='eGOLD'?'G-1___-_____-____-_____':wallet_to))
 						})
 						$('.page-transactions .amount').click(function(target) {
@@ -9861,7 +9889,7 @@ function page_referral(interval){
 		$.ajax({
 			url: "http://"+json_typewallet.noda+"/egold.php",
 			method: 'POST',
-			timeout: 3000,
+			timeout: 5000,
 			async:true,
 			data: url_data,
 			success: function success(data) {
@@ -9888,6 +9916,11 @@ function page_referral(interval){
 						page_referral(1);
 						return false;
 					} else {
+						wallet_to_arr_name= '';
+						json_contacts= '';
+						if(typeof(localStorage.getItem('eGOLD_password'))!= undefined && typeof(localStorage.getItem('eGOLD_contacts'))!= undefined && localStorage.getItem('eGOLD_password') && localStorage.getItem('eGOLD_contacts')){
+							json_contacts= JSON.parse(localStorage.getItem('eGOLD_contacts'));
+						}
 						for(var i=0;i<(json_referral.length-1) && typeof(json_referral[i].date)!= "undefined";i++) {
 							new_transaction = 'black';
 							st= '#7b7b7b';
@@ -9914,16 +9947,24 @@ function page_referral(interval){
 								icon= '#R3';
 								money=parseInt(json_referral[i].money3);
 							}
+							if(json_contacts){
+								wallet_to_arr_name= $.grep(json_contacts, function (element, index){
+									return element.recipient == json_referral[i].wallet;
+								});
+								if(wallet_to_arr_name && typeof(wallet_to_arr_name[0])!= "undefined")wallet_to_arr_name= wallet_to_arr_name[0].name;
+								else wallet_to_arr_name='';
+							}
+							if(!wallet_to_arr_name)wallet_to_arr_name=wallet_to_arr;
 							var p= $('.page-referral .block-list')[0].innerHTML;
-							$('.page-referral .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p>"+wallet_to_arr+"</p></div><div class='amount' style='color: "+st+";'><p >+ "+number_format(money, 0, '.', ' ')+"</p></div><div class='status'><svg class='icon'><use xlink:href='"+icon+"'></use></svg></div></div>";
+							$('.page-referral .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='amount' style='color: "+st+";'><p >+ "+number_format(money, 0, '.', ' ')+"</p></div><div class='status'><svg class='icon'><use xlink:href='"+icon+"'></use></svg></div></div>";
 						}
 						$('.page-referral .amount-rows')[0].innerText = json_referral.length == undefined ? 0 : json_referral.length-1; 
 						$('.page-referral .dateO').click(function(target) {
 							$('.page-referral .dateSort2').val(target.currentTarget.innerText.trim())
 						})
-						$('.page-referral .wallet').click(function(target) {
+						$('.page-referral .wallet p').click(function(target) {
 							hide_send();
-							wallet_to= target.currentTarget.innerText.trim();
+							wallet_to= $(this).attr('wallet');
 							$('.wallet_to').val((wallet_to=='eGOLD'?'G-1___-_____-____-_____':wallet_to))
 						})
 						$('.page-referral .amount').click(function(target) {
@@ -9958,7 +9999,7 @@ function page_referral(interval){
 	}
 }
 //переход на страницу контактов
-function page_contact(){	
+function page_contact(){
 	//проверка на таймаут
 	if(timeout_now_stop())return false;
 	var json_typewallet= json_typewallet_arr();
@@ -9969,7 +10010,7 @@ function page_contact(){
 		$.ajax({
 			url: "http://"+json_typewallet.noda+"/egold.php",
 			method: 'POST',
-			timeout: 3000,
+			timeout: 5000,
 			async:true,
 			data: "type=contacts&wallet="+json_typewallet.wallet+(password?"&password="+method(method(password,128*4),256*4):''),
 			success: function success(data) {
@@ -10018,6 +10059,8 @@ function page_contact(){
 						$(".page-contact .block-list .nameCon").on('keyup keydown change',function(event){
 							$(this).val($(this).val().replace(/[^\da-zA-Z-@\.!#$%&*+=?_{|}~ №]/ig,'').toLowerCase());
 						})
+						//запись контактов в хранилище
+						localStorage.setItem('eGOLD_contacts',JSON.stringify(json_contacts_data));
 					}
 				}
 			},
@@ -10069,7 +10112,7 @@ $('.saveContact').click(function() {
 		$.ajax({
 			url: "http://"+json_typewallet.noda+"/egold.php",
 			method: 'POST',
-			timeout: 3000,
+			timeout: 5000,
 			async:true,
 			data: "type=contacts&wallet="+json_typewallet.wallet+"&contacts="+contacts+(password?"&password="+method(method(password,128*4),256*4):''),
 			success: function success(data) {
@@ -10100,7 +10143,7 @@ function wallet_height(wallet){
 		$.ajax({
 			url: "http://"+json_typewallet.noda+"/egold.php",
 			method: 'POST',
-			timeout: 3000,
+			timeout: 5000,
 			async:false,
 			data: "type=height&wallet="+wallet,
 			success: function success(data) {
@@ -10176,7 +10219,7 @@ function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 			$.ajax({
 				url: "http://"+nodause+"/egold.php",
 				method: 'POST',
-				timeout: 3000,
+				timeout: 5000,
 				async:false,
 				data: {
 								type: 'send',
@@ -10197,7 +10240,7 @@ function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 				success: function success(data) {
 					if(!data || !IsJsonString(data)){}
 					else json_send= JSON.parse(data);
-					console.log(json_send);
+					<!-- console.log(json_send); -->
 				},
 				error: function error(data){}
 			})
@@ -10375,7 +10418,7 @@ function menuPages(id){//id если id пустое, то просто закр
   }
 }
 //переход по меню
-$(".row-management li,#page-qr-code").click(function () {menuPages($(this).attr('id'))})
+$(".row-management li,#page-qr-code,#page-key-change").click(function () {menuPages($(this).attr('id'))})
 //скачивание qr кода
 $('.download').on('click', function(){
 	var link = document.createElement('a');
@@ -10396,13 +10439,14 @@ function clean_filters(){
 function logout(){
 	menuPages('');
 	localStorage_clean();
+	if(typeof(localStorage.getItem('eGOLD_password'))!= undefined)localStorage.removeItem('eGOLD_password');
+	if(typeof(localStorage.getItem('eGOLD_contacts'))!= undefined)localStorage.removeItem('eGOLD_contacts');
 	hide_send();
 	hide_new_password();
 	clear_newkey_and_newwallet();
 	clean_filters();
 	$(".preloader-container.no-data").show();
 	if($('.block-list').html())$('.block-list').html('');
-	if(typeof(localStorage.getItem('eGOLD_password'))!= undefined)localStorage.removeItem('eGOLD_password');
 	if(!$('.header-login').hasClass('hide')){
 		$('.header-not-logged').removeClass("hide");
 		$('.header-login').addClass("hide");

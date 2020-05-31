@@ -1,4 +1,4 @@
-<?php //v1.1
+<?php //v1.2
 ini_set("memory_limit", "2048M");
 // ini_set('error_reporting', E_ALL); 
 // ini_set('display_errors', 0);
@@ -1222,6 +1222,7 @@ if($stop!=1 && $request['type']=="referrals"){
 		}
 		if(isset($request['height'])) $where.= " and `height`>= '".$request['height']."'";
 		if(isset($request['date'])) $where.= " and `date`>= '".$request['date']."'";
+		if(isset($request['dateto'])) $where.= " and `date`< '".$request['dateto']."'";
 		if(isset($request['order']) && $request['order']=='asc') $order= "ASC";else $order= "DESC";
 		if(isset($request['start']) && $request['start']>0) $start= $request['start'];else $start=0;
 		if(isset($request['limit']) && $request['limit']>0 && $request['limit']<100) $limit= $request['limit'];else $limit=100;
@@ -1256,6 +1257,8 @@ if($stop!=1 && $request['type']=="referralwallets"){
 		}
 		if(isset($request['height'])) $where.= " and `height`>= '".$request['height']."'";
 		if(isset($request['date'])) $where.= " and `date`>= '".$request['date']."'";
+		if(isset($request['dateto'])) $where.= " and `date`< '".$request['dateto']."'";
+		if(isset($request['nodause'])) $where.= " and `nodause`= '".$request['nodause']."'";
 		if(isset($request['order'])){
 			if($request['order']=='asc')$order= "`date` ASC";
 			else if($request['order']=='balanceasc')$order= "`balance` ASC, `date` DESC";
