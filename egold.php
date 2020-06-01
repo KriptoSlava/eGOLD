@@ -1,4 +1,4 @@
-<?php //v1.2
+<?php //v1.3
 ini_set("memory_limit", "2048M");
 // ini_set('error_reporting', E_ALL); 
 // ini_set('display_errors', 0);
@@ -60,8 +60,10 @@ if(($key=array_search($noda_ip,$noda_trust)) !== FALSE){array_splice($noda_trust
 $stop=0; 
 if(isset($argv[1]) || $_SERVER['SERVER_NAME']=='127.0.0.1' || $_SERVER['SERVER_NAME']=='localhost')$host_ip=$noda_ip;
 else {
-  if((!isset($noda_site) || $noda_site!=(isset($_SERVER['HTTPS'])?'https://'.$_SERVER['SERVER_NAME']:'http://'.$_SERVER['SERVER_NAME']))
-  && (isset($_SERVER['HTTPS']) || $noda_ip!= convert_ipv6(preg_replace("/[^0-9a-z.:]/",'',$_SERVER['SERVER_NAME'])))){echo '{"noda_ip": "false"}';exit;}
+  if($noda_ip!= convert_ipv6($_SERVER['SERVER_NAME']) && $noda_site!= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off'?'https://'.$_SERVER['SERVER_NAME']:'http://'.$_SERVER['SERVER_NAME'])){
+		if(isset($noda_site) && $noda_site){echo '{"noda_site": "false"}';exit;} 
+		else {echo '{"noda_ip": "false"}';exit;}
+	} else if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off'){echo '{"noda_ip": "false"}';exit;}
   if(!empty($_SERVER['HTTP_CLIENT_IP']))$host_ip=$_SERVER['HTTP_CLIENT_IP'];
   else if(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))$host_ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
   else $host_ip=$_SERVER['REMOTE_ADDR'];
