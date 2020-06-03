@@ -1,4 +1,4 @@
-<?php //v1.3
+<?php //v1.4.1
 ini_set("memory_limit", "2048M");
 // ini_set('error_reporting', E_ALL); 
 // ini_set('display_errors', 0);
@@ -48,22 +48,24 @@ function convert_ipv6($ip){
 }
 $noda_ip=convert_ipv6($noda_ip);
 $noda_wallet=preg_replace("/[^0-9]/",'',$noda_wallet);
-if(!isset($noda_ip) || !$noda_ip){echo '{"error":"noda_ip in egold settings.php"}';exit;}
-if(!isset($host_db) || !$host_db){echo '{"error":"host_db in egold settings.php"}';exit;}
-if(!isset($database_db) || !$database_db){echo '{"error":"database_db in egold settings.php"}';exit;}
-if(!isset($user_db) || !$user_db){echo '{"error":"user_db in egold settings.php"}';exit;}
-if(!isset($password_db) || !$password_db){echo '{"error":"password_db in egold settings.php"}';exit;}
+if(!isset($noda_ip) || !$noda_ip){echo '{"error": "noda_ip in egold settings.php"}';exit;}
+if(!isset($host_db) || !$host_db){echo '{"error": "host_db in egold settings.php"}';exit;}
+if(!isset($database_db) || !$database_db){echo '{"error": "database_db in egold settings.php"}';exit;}
+if(!isset($user_db) || !$user_db){echo '{"error": "user_db in egold settings.php"}';exit;}
+if(!isset($password_db) || !$password_db){echo '{"error": "password_db in egold settings.php"}';exit;}
 if(!isset($prefix_db) || !$prefix_db)$prefix_db='egold';
-if(!isset($noda_wallet) || !$noda_wallet){echo '{"error":"noda_wallet in egold settings.php"}';exit;}
-if(!isset($noda_trust) || count($noda_trust)<3){echo '{"error":"noda_trust minimum 3 nodas in egold settings.php"}';exit;}
+if(!isset($noda_wallet) || !$noda_wallet){echo '{"error": "noda_wallet in egold settings.php"}';exit;}
+if(!isset($noda_trust) || count($noda_trust)<3){echo '{"error": "noda_trust minimum 3 nodas in egold settings.php"}';exit;}
 if(($key=array_search($noda_ip,$noda_trust)) !== FALSE){array_splice($noda_trust, $key, 1);}
 $stop=0; 
 if(isset($argv[1]) || $_SERVER['SERVER_NAME']=='127.0.0.1' || $_SERVER['SERVER_NAME']=='localhost')$host_ip=$noda_ip;
 else {
-  if($noda_ip!= convert_ipv6($_SERVER['SERVER_NAME']) && $noda_site!= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off'?'https://'.$_SERVER['SERVER_NAME']:'http://'.$_SERVER['SERVER_NAME'])){
-		if(isset($noda_site) && $noda_site){echo '{"noda_site": "false"}';exit;} 
-		else {echo '{"noda_ip": "false"}';exit;}
-	} else if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off'){echo '{"noda_ip": "false"}';exit;}
+	$noda_ip_now= convert_ipv6($_SERVER['SERVER_NAME']);
+	$noda_site_now= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off'?'https://'.$_SERVER['SERVER_NAME']:'http://'.$_SERVER['SERVER_NAME']);
+  if($noda_ip!= $noda_ip_now && $noda_site!= $noda_site_now){
+		if(isset($noda_site) && $noda_site){echo '{"noda_site": "false", "error": "'.$noda_site.' != '.$noda_site_now.'"}';exit;} 
+		else {echo '{"noda_ip": "false", "error": "'.$noda_ip.' != '.$noda_ip_now.'"}';exit;}
+	} else if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off' && $noda_site!= $noda_site_now){echo '{"noda_ip": "false", "error": "'.$noda_ip.' != '.$noda_ip_now.'"}';exit;}
   if(!empty($_SERVER['HTTP_CLIENT_IP']))$host_ip=$_SERVER['HTTP_CLIENT_IP'];
   else if(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))$host_ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
   else $host_ip=$_SERVER['REMOTE_ADDR'];
