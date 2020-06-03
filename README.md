@@ -1,3 +1,7 @@
+MD5 файла «eGOLD_v1.4.1.zip»: **152C51B86FA56234E14792ECF91FD5C1**
+
+Изменения v1.4.1: в egold.php добавлено пояснение, если не правильно указан IP адрес или имя сайта в файле настроек egold_settings.php. Для обновления, достаточно заменить файл egold.php
+
 MD5 файла «eGOLD_v1.4.zip»: **1626FAE68493530A5703340A7CE8C4DD**
 
 MD5 файла «eGOLD_v1.3.zip»: **FF5444F6D7961E2DAC2BD5E0E0C78BDF**
@@ -30,6 +34,8 @@ $noda_trust[]= "91.106.203.180";
 $noda_trust[]= "91.106.203.181";
 $noda_trust[]= "91.106.203.202";
 $noda_trust[]= "185.50.26.220";
+
+Полный список всех нод, доступен на любой ноде по запросу http://[IP ноды]/egold.php?type=nodas. Например: https://www.egold.pro/egold.php?type=nodas (noda- IP ноды, wallet- кошелёк ноды, balance- баланс кошелька ноды, walletsuse- количество кошельков, использующих ноду, datelastuse- дата и время последней транзакции в юникоде)
 
 Видео инструкция по проверке MD5 архива «eGOLD.rar»: https://www.egold.pro/doc/eGOLD_MD5.mp4
 
