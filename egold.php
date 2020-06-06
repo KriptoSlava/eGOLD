@@ -1,4 +1,4 @@
-<?php //v1.4.1
+<?php //v1.4.2
 ini_set("memory_limit", "2048M");
 // ini_set('error_reporting', E_ALL); 
 // ini_set('display_errors', 0);
@@ -46,7 +46,7 @@ function convert_ipv6($ip){
   }
   return $ip;
 }
-$noda_ip=convert_ipv6($noda_ip);
+$noda_ip=convert_ipv6(preg_replace("/[^0-9a-z.:]/",'',$noda_ip));
 $noda_wallet=preg_replace("/[^0-9]/",'',$noda_wallet);
 if(!isset($noda_ip) || !$noda_ip){echo '{"error": "noda_ip in egold settings.php"}';exit;}
 if(!isset($host_db) || !$host_db){echo '{"error": "host_db in egold settings.php"}';exit;}
@@ -60,7 +60,7 @@ if(($key=array_search($noda_ip,$noda_trust)) !== FALSE){array_splice($noda_trust
 $stop=0; 
 if(isset($argv[1]) || $_SERVER['SERVER_NAME']=='127.0.0.1' || $_SERVER['SERVER_NAME']=='localhost')$host_ip=$noda_ip;
 else {
-	$noda_ip_now= convert_ipv6($_SERVER['SERVER_NAME']);
+	$noda_ip_now= convert_ipv6(preg_replace("/[^0-9a-z.:]/",'',$_SERVER['SERVER_NAME']));
 	$noda_site_now= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off'?'https://'.$_SERVER['SERVER_NAME']:'http://'.$_SERVER['SERVER_NAME']);
   if($noda_ip!= $noda_ip_now && $noda_site!= $noda_site_now){
 		if(isset($noda_site) && $noda_site){echo '{"noda_site": "false", "error": "'.$noda_site.' != '.$noda_site_now.'"}';exit;} 
@@ -1087,7 +1087,7 @@ if($stop!=1){
                 query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` (`wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `height`, `signpubnew`, `signnew`, `signpub`, `sign`, `checkbalance`, `checkbalanceall`, `checkwallet`, `view`) VALUES (".implode("),(",$wallets_bd_add).");");
                 if(mysqli_affected_rows($mysqli_connect)>=1){}
                 foreach ($wallets_bd_add as $key => $value) {
-                  if(isset($noda_json_arr_all_wallets[$key])){
+                  if(isset($noda_json_arr_all_wallets[$key]) && isset($sqltbl_arr) && isset($sqltbl_arr['wallet'])){
                     query_bd("SELECT `recipient`,`height`,`money`,`pin`,`nodawallet`,`date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$sqltbl_arr['height']."' and `checkhistory`=1 and `sign`!= '".$noda_json_arr_all_wallets[$key]['sign']."' LIMIT 1;");
                     if(isset($sqltbl['recipient'])){
                       $sqltbl_history= $sqltbl;
