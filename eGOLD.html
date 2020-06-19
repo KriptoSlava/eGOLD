@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eGOLD v1.4</title>
+  <title>eGOLD v1.5</title>
   <script>
     !function(e,t){if("function"==typeof define&&define.amd)define(["module","exports"],t);else if("undefined"!=typeof exports)t(module,exports);else{var n={exports:{}};t(n,n.exports),e.autosize=n.exports}}(this,function(e,t){"use strict";var n,o,p="function"==typeof Map?new Map:(n=[],o=[],{has:function(e){return-1<n.indexOf(e)},get:function(e){return o[n.indexOf(e)]},set:function(e,t){-1===n.indexOf(e)&&(n.push(e),o.push(t))},delete:function(e){var t=n.indexOf(e);-1<t&&(n.splice(t,1),o.splice(t,1))}}),c=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){c=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(r){if(r&&r.nodeName&&"TEXTAREA"===r.nodeName&&!p.has(r)){var e,n=null,o=null,i=null,d=function(){r.clientWidth!==o&&a()},l=function(t){window.removeEventListener("resize",d,!1),r.removeEventListener("input",a,!1),r.removeEventListener("keyup",a,!1),r.removeEventListener("autosize:destroy",l,!1),r.removeEventListener("autosize:update",a,!1),Object.keys(t).forEach(function(e){r.style[e]=t[e]}),p.delete(r)}.bind(r,{height:r.style.height,resize:r.style.resize,overflowY:r.style.overflowY,overflowX:r.style.overflowX,wordWrap:r.style.wordWrap});r.addEventListener("autosize:destroy",l,!1),"onpropertychange"in r&&"oninput"in r&&r.addEventListener("keyup",a,!1),window.addEventListener("resize",d,!1),r.addEventListener("input",a,!1),r.addEventListener("autosize:update",a,!1),r.style.overflowX="hidden",r.style.wordWrap="break-word",p.set(r,{destroy:l,update:a}),"vertical"===(e=window.getComputedStyle(r,null)).resize?r.style.resize="none":"both"===e.resize&&(r.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),a()}function s(e){var t=r.style.width;r.style.width="0px",r.offsetWidth,r.style.width=t,r.style.overflowY=e}function u(){if(0!==r.scrollHeight){var e=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&t.push({node:e.parentNode,scrollTop:e.parentNode.scrollTop}),e=e.parentNode;return t}(r),t=document.documentElement&&document.documentElement.scrollTop;r.style.height="",r.style.height=r.scrollHeight+n+"px",o=r.clientWidth,e.forEach(function(e){e.node.scrollTop=e.scrollTop}),t&&(document.documentElement.scrollTop=t)}}function a(){u();var e=Math.round(parseFloat(r.style.height)),t=window.getComputedStyle(r,null),n="content-box"===t.boxSizing?Math.round(parseFloat(t.height)):r.offsetHeight;if(n<e?"hidden"===t.overflowY&&(s("scroll"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight):"hidden"!==t.overflowY&&(s("hidden"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight),i!==n){i=n;var o=c("autosize:resized");try{r.dispatchEvent(o)}catch(e){}}}}function i(e){var t=p.get(e);t&&t.destroy()}function d(e){var t=p.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return r(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],d),e}),t.default=l,e.exports=t.default});
   <!-- Копирование в буфер обмена -->
@@ -2250,6 +2250,16 @@ new WOW().init();
 WOW
 -->  
 <style>
+#error_log{
+	display:none;
+	color: white;
+	font-weight: bold;
+	width: 100%;
+	text-align: center;
+	background-color: red;
+	padding: 5px 0;
+	margin-bottom: 50px;
+}
 /*
 wow
 */
@@ -7423,6 +7433,7 @@ button::-moz-focus-inner {
 <link rel="shortcut icon" href="data:image/png;base64,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">
 </head>
 <body>
+	<div id="error_log"></div>
   <header class="container wow slideInLeft" data-wow-delay="0.3s">
     <div class="header-login hide">
       <div class="row-info">
@@ -9314,14 +9325,20 @@ $('.copy_in-new-text').click(function () {
 $('.copy_in-text').click(function () {
 	new ClipboardJS('.copy_in-text');
 });
- function check_ip(ip){
+function check_ip(ip){
 	expression = /((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/;
 	if (expression.test(ip))return true;
 	else return false;
 }
 //маска для полей кошелька
-$(`input[data-inputmask="'mask': 'G-9999-99999-9999-99999'"]`).mask("G-9999-99999-9999-99999",{autoclear: false});
-$(`input[data-inputmask="'mask': '99.99.9999 99:99:99'"]`).mask("99.99.9999 99:99:99",{autoclear: false});
+$('input[data-inputmask="\'mask\': \'G-9999-99999-9999-99999\'"]').mask("G-9999-99999-9999-99999",{autoclear: false});
+$('input[data-inputmask="\'mask\': \'99.99.9999 99:99:99\'"]').mask("99.99.9999 99:99:99",{autoclear: false});
+//если нет доступа к localStorage, тогда завершаем работу скриптов
+if(!window.localStorage){
+	$('#error_log').show();
+	$('#error_log').html("Required to allow data storage in localStorage");
+	$(".but_reg").hide();
+} else {
 //очистка данных из памяти
 function localStorage_clean(){
 	if(typeof(localStorage.getItem('eGOLD_typewallet'))!= undefined)localStorage.removeItem('eGOLD_typewallet');
@@ -9386,6 +9403,7 @@ function login(){
 		var json_typewallet= JSON.parse(localStorage.getItem('eGOLD_typewallet'));
 		if(json_typewallet && typeof(json_typewallet.wallet)!= "undefined" && typeof(json_typewallet.noda)!= "undefined" && typeof(json_typewallet.balance)!= "undefined" && typeof(json_typewallet.percent_4)!= "undefined" && typeof(json_typewallet.percent_5)!= "undefined" && typeof(json_typewallet.date)!= "undefined" && typeof(json_typewallet.ref1)!= "undefined" && typeof(json_typewallet.ref2)!= "undefined" && typeof(json_typewallet.ref3)!= "undefined" && typeof(json_typewallet.nodawallet)!= "undefined"
 		&& localStorage.getItem('eGOLD_typewallettime')!= undefined && localStorage.getItem('eGOLD_typewallettime')){
+			if(parseInt(Date.now()/1000)-localStorage.getItem('eGOLD_typewallettime')>58)localStorage.setItem('eGOLD_typewallettime',(parseInt(Date.now()/1000)-58));
 			$('#wallet').val('');
 			$('#ip').val('');
 			$('#NumOfWall').html(json_typewallet.wallet);
@@ -9490,13 +9508,13 @@ function saveTypeWallet(wallet,ip,id,password){
 					if($('#page-transactions').hasClass('active')){
 						setTimeout(function () {
 							page_transactions(1);
-						},1000);
+						},1200);
 					}
 					//загрузка списка транзакций по рефералам
 					if($('#page-referral').hasClass('active')){
 						setTimeout(function () {
 							page_referral();
-						},1000);
+						},1200);
 					}
 					} else return_view= 'ip';
 				}
@@ -10033,7 +10051,7 @@ function page_contact(){
 						}
 						//сортируем массив по возрастанию
 						function sortBy(arr) {
-							arr.sort((a, b) => a.recipient > b.recipient ? 1 : -1);
+							arr.sort(function(a,b) {return a.recipient > b.recipient ? 1 : -1});
 						}
 						sortBy(json_contacts_data);
 						for(var i=0;i<json_contacts_data.length && typeof(json_contacts_data[i].recipient)!= "undefined";i++) {
@@ -10285,9 +10303,11 @@ $(".but_send").click(function () {
 	else if(!(wallet==1 || (wallet.length==18 && wallet_height(wallet)>=0)))errorInput('.wallet_to');
 	else if(!($('.amout_to').val()>0))errorInput('.amout_to');
 	else if(!(parseInt($('.money p').html().replace(/[^\d\.]/g, ""))>=parseInt($('.amout_to').val())+2)){
-		errorAllDisplay();
 		errorInput('.amout_to');
 		errorInput('.money p');
+		money= parseInt($('.money p').html().replace(/[^\d\.]/g, ""));
+		amout_to= parseInt($('.amout_to').val())+2;
+		if(money>=3)$('.amout_to').val(money-2);
 	}else {
 		$('.block-input').removeClass("show").removeClass("anim-show").addClass("hide");
 		$('.secret-key').removeClass("hide").addClass("show").addClass("anim-show");
@@ -10391,6 +10411,7 @@ $('.send-register-wallet').click(function(){
 })
 //нажатие кнопок страниц меню или выход из страниц
 function menuPages(id){//id если id пустое, то просто закрываем страницы
+	if(id && typeof(localStorage.getItem('eGOLD_typewallettime'))!= undefined && parseInt(Date.now()/1000)-localStorage.getItem('eGOLD_typewallettime')>58)localStorage.setItem('eGOLD_typewallettime',(parseInt(Date.now()/1000)-58));
 	trueInput('.money p');
 	trueInput('.wallet_to');
 	trueInput('.amout_to');
@@ -10525,6 +10546,7 @@ setInterval(function () {
 					if($('.page-settings .blockEmail').css('display')!='none')$('.page-settings .blockEmail').hide();
 				}
 			} else page_settings_active_now=1;//для обновления инпутов
+			//если транзакция находится в обработке, то учитываем баланс транзакции для начисления процентов
 			if(json_typewallet.balance>0){
 				time_percent= parseInt(parseInt(Date.now()/1000)-parseInt(json_typewallet.date)-parseInt(localStorage.getItem('eGOLD_typewallettime_different')));
 				balance_save= parseInt(json_typewallet.balance);
@@ -10532,9 +10554,12 @@ setInterval(function () {
 				else balance= balance_save;
 				$('.money p').html(number_format(balance, 7, '.', ' '));
 				if(json_typewallet.nodawallet){
-					if(time_percent>0)bonus= parseInt(balance_save*((Math.pow(1.00000001929,time_percent)-Math.pow(1.000000015432,time_percent))));
-					else bonus=0;
-					$('.money-bonus p').html('+ '+number_format(bonus, 0, '.', ' '));
+					if(json_typewallet.balancetransactioncheck>=0)$('.money-bonus p').html('+ ?');
+					else {
+						if(time_percent>0)bonus= parseInt(balance_save*((Math.pow(1.00000001929,time_percent)-Math.pow(1.000000015432,time_percent))));
+						else bonus=0;
+						$('.money-bonus p').html('+ '+number_format(bonus, 0, '.', ' '));
+					}
 					if($('.money-bonus').hasClass('hide'))$('.money-bonus').removeClass('hide');
 				} else {
 					if(!$('.money-bonus').hasClass('hide'))$('.money-bonus').addClass('hide');
@@ -10551,7 +10576,7 @@ setInterval(function () {
 			location.reload();
 		}
 	}
-}, 1000);
+}, 1100);
 //запрещаем в полях вводить что-то отличное от цифр
 $(".set-page-transaction input,.search-transaction-pin input,.set-page-referral input,.page-settings .UP, .page-settings .down, .amout_to, .pin_to").on('keyup keydown change',function(event){
 	int_now= $(this).val().replace(/[^\d]/g, "");
@@ -10570,6 +10595,7 @@ $(".passwordSettings,.PasSetTwo").on('keyup keydown change',function(event){
 $(".page-settings .EmailSettings").on('keyup keydown change',function(event){
 	$(this).val($(this).val().replace(/[^\da-zA-Z-@\.!#$%&*+=?_{|}~]/ig,'').toLowerCase());
 })
+}
 </script>
 </body>
 </html>
