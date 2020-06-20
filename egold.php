@@ -1,9 +1,9 @@
-<?php //v1.4.2
+<?php //v1.5
 ini_set("memory_limit", "2048M");
-// ini_set('error_reporting', E_ALL); 
-// ini_set('display_errors', 0);
-// ini_set('log_errors','on');
-// ini_set('error_log', __DIR__ . '/log_error.log');
+ini_set('error_reporting', E_ALL); 
+ini_set('display_errors', 0);
+ini_set('log_errors','on');
+ini_set('error_log', __DIR__ . '/log_error.log');
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
 if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
@@ -253,6 +253,7 @@ $type['height']="0-9";
 $type['signpubnew']="0-9";
 $type['signpub']="0-9a-z";
 $type['signpubreg']=$type['signpub'];
+$type['signpubnew_check']=$type['signpub'];
 $type['sign']="0-9a-z:";
 $type['signnew']=$type['sign'];
 $type['signreg']=$type['sign'];
@@ -283,6 +284,19 @@ $type['wallets_with_noda_first']="1";
 $type['synch_wallet']="0-9";
 foreach($_REQUEST as $key=> $val) if(strlen($key)<100 && $val && strlen($val)<1440 && in_array($key,array_keys($type))) $request[$key]= preg_replace("/[^".$type[$key]."]/",'',$val);
 include 'egold_crypto/falcon.php';
+function bchexdec($hex){
+	$dec = 0; $len = strlen($hex);
+	for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
+	return $dec;
+}
+function sha_dec($str){return substr(bchexdec(gen_sha3($str,19)),0,19);}
+function signcheck($str,$signpub,$sign){return ($signpub && $str && $sign && Falcon\verify($signpub, $str, $sign))? 1: 0;}
+if(isset($request['signpubnew_check'])){
+	if(signcheck($request['wallet'].$request['height'],$request['signpubnew_check'],$request['signnew'])!=1){
+		$json_arr['signpubnew_check']= 'false';
+		$stop=1;
+	} else $json_arr['signpubnew_check']= 'true';
+}
 if(isset($request['email']) && isset($request['password'])){
 	function intToChar($str){
 		$intStr= str_split($str, 4);
@@ -416,7 +430,7 @@ if($stop!=1 && ($request['type']=="height" || ($request['type']=="send" && $json
       $json_arr['height']= $sqltbl['height'];
       $json_arr['date']= $sqltbl['date'];
     }
-    if(isset($request['height']) && $json_arr['height']!=$request['height']-1){echo '{"height":"false"}';mysqli_close($mysqli_connect);exit;}
+    if(isset($request['height']) && (int)$request['height']>=0 && (int)$request['height']==$request['height'] && $json_arr['height']!=$request['height']-1){echo '{"height":"false"}';mysqli_close($mysqli_connect);exit;}
     if($request['type']=="height")$stop=1;
     else if($json_arr['time']-$json_arr['date']<=4){echo '{"send":"timeout"}';mysqli_close($mysqli_connect);exit;}
   } else {echo '{"wallet":"unavailable"}';mysqli_close($mysqli_connect);exit;}
@@ -468,15 +482,6 @@ if($stop!=1){
       curl_multi_close($multi);
       return $json_get_arr;
     }
-  }
-  function bchexdec($hex){
-      $dec = 0; $len = strlen($hex);
-      for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
-      return $dec;
-  }
-  function sha_dec($str){return substr(bchexdec(gen_sha3($str,19)),0,19);}
-  function signcheck($str,$signpub,$sign){
-    return ($signpub && $str && $sign && Falcon\verify($signpub, $str, $sign))? 1: 0;
   }
   function random($array,$count){
     if(is_array($array) && count($array)>$count){
@@ -612,7 +617,7 @@ if($stop!=1){
     $request_sha_temp['wallet']= $request['wallet'];
     $request_sha_temp['recipient']= $request['recipient'];
     $request_sha_temp['money']= $request['money'];
-	$request_sha_temp['pin']= $request['pin'];
+		$request_sha_temp['pin']= $request['pin'];
     $request_sha_temp['height']= $request['height'];
     $request_sha_temp['nodawallet']= $nodawallet;
     $request_sha_temp['nodause']= $nodause;
@@ -681,7 +686,7 @@ if($stop!=1){
             $wallet['height']=$sqltbl['height'];
             $wallet['date']=$sqltbl['date'];
             $wallet['money']=$sqltbl['money'];
-			$wallet['pin']=$sqltbl['pin'];
+						$wallet['pin']=$sqltbl['pin'];
          }
           if($synch==1 && $wallet['height']<$request['height']-1){
             $post['type']= 'history';
@@ -690,7 +695,7 @@ if($stop!=1){
             $post['order']= 'asc';
             $post['limit']= 100;
             $post['all']= 3;
-           $wallet= transaction_check($host_ip,$post,$wallet,$request);
+						$wallet= transaction_check($host_ip,$post,$wallet,$request);
           }
           if($wallet['height']<$request['height']-1)$checkhistory= -1;
           else if($wallet['height']==$request['height']-1 && (($wallet['signpubnew']=='' && $wallet['signpub']==$request['signpub']) || ($wallet['signpubnew']== sha_dec($request['signpub']) && signcheck($wallet['wallet'].$wallet['height'],$request['signpub'],$wallet['signnew'])==1))){
@@ -711,14 +716,14 @@ if($stop!=1){
               if($checkhistory!=0){
                 $json_arr['error']= 'send';
               } else {
-				$sqltbl_count= query_bd("SELECT COUNT(`checkhistory`) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$request['wallet']."' and (`date`>= ".$datecheck."-3 and `date`<= ".$datecheck."+3) LIMIT 1;");
-                if(isset($sqltbl_count['count']) && (int)$sqltbl_count['count']>1){
-                  $json_arr['error']= 'send';
-                  query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=2 WHERE `checkhistory`=0 and `wallet`= '".$request['wallet']."' and (`date`>= ".$datecheck."-3 and `date`<= ".$datecheck."+3);");
-                  if(mysqli_affected_rows($mysqli_connect)>=1){}
-                } else {
-					$json_arr['send']= 'true';
-				}
+								$sqltbl_count= query_bd("SELECT COUNT(`checkhistory`) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$request['wallet']."' and (`date`>= ".$datecheck."-3 and `date`<= ".$datecheck."+3) LIMIT 1;");
+								if(isset($sqltbl_count['count']) && (int)$sqltbl_count['count']>1){
+									$json_arr['error']= 'send';
+									query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=2 WHERE `checkhistory`=0 and `wallet`= '".$request['wallet']."' and (`date`>= ".$datecheck."-3 and `date`<= ".$datecheck."+3);");
+									if(mysqli_affected_rows($mysqli_connect)>=1){}
+								} else {
+									$json_arr['send']= 'true';
+								}
               }
               usleep(0.1*1000000);
               if($recipient['wallet']>1)$json_arr['recipient']= gold_wallet_view($recipient['wallet']);
@@ -774,7 +779,7 @@ if($stop!=1){
           $send_arr['wallet']=$value['wallet'];
           $send_arr['recipient']=$value['recipient'];
           $send_arr['money']=$value['money'];
-		  $send_arr['pin']=$value['pin'];
+					$send_arr['pin']=$value['pin'];
           $send_arr['height']=$value['height'];
           $send_arr['nodawallet']=$value['nodawallet'];
           $send_arr['nodause']=$value['nodause'];
@@ -1061,7 +1066,7 @@ if($stop!=1){
                               query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
                             }
                           } else {
-							query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`> '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
+														query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`> '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
                           }
                         }
                       } else {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eGOLD v1.5</title>
+  <title>eGOLD v1.6</title>
   <script>
     !function(e,t){if("function"==typeof define&&define.amd)define(["module","exports"],t);else if("undefined"!=typeof exports)t(module,exports);else{var n={exports:{}};t(n,n.exports),e.autosize=n.exports}}(this,function(e,t){"use strict";var n,o,p="function"==typeof Map?new Map:(n=[],o=[],{has:function(e){return-1<n.indexOf(e)},get:function(e){return o[n.indexOf(e)]},set:function(e,t){-1===n.indexOf(e)&&(n.push(e),o.push(t))},delete:function(e){var t=n.indexOf(e);-1<t&&(n.splice(t,1),o.splice(t,1))}}),c=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){c=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(r){if(r&&r.nodeName&&"TEXTAREA"===r.nodeName&&!p.has(r)){var e,n=null,o=null,i=null,d=function(){r.clientWidth!==o&&a()},l=function(t){window.removeEventListener("resize",d,!1),r.removeEventListener("input",a,!1),r.removeEventListener("keyup",a,!1),r.removeEventListener("autosize:destroy",l,!1),r.removeEventListener("autosize:update",a,!1),Object.keys(t).forEach(function(e){r.style[e]=t[e]}),p.delete(r)}.bind(r,{height:r.style.height,resize:r.style.resize,overflowY:r.style.overflowY,overflowX:r.style.overflowX,wordWrap:r.style.wordWrap});r.addEventListener("autosize:destroy",l,!1),"onpropertychange"in r&&"oninput"in r&&r.addEventListener("keyup",a,!1),window.addEventListener("resize",d,!1),r.addEventListener("input",a,!1),r.addEventListener("autosize:update",a,!1),r.style.overflowX="hidden",r.style.wordWrap="break-word",p.set(r,{destroy:l,update:a}),"vertical"===(e=window.getComputedStyle(r,null)).resize?r.style.resize="none":"both"===e.resize&&(r.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),a()}function s(e){var t=r.style.width;r.style.width="0px",r.offsetWidth,r.style.width=t,r.style.overflowY=e}function u(){if(0!==r.scrollHeight){var e=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&t.push({node:e.parentNode,scrollTop:e.parentNode.scrollTop}),e=e.parentNode;return t}(r),t=document.documentElement&&document.documentElement.scrollTop;r.style.height="",r.style.height=r.scrollHeight+n+"px",o=r.clientWidth,e.forEach(function(e){e.node.scrollTop=e.scrollTop}),t&&(document.documentElement.scrollTop=t)}}function a(){u();var e=Math.round(parseFloat(r.style.height)),t=window.getComputedStyle(r,null),n="content-box"===t.boxSizing?Math.round(parseFloat(t.height)):r.offsetHeight;if(n<e?"hidden"===t.overflowY&&(s("scroll"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight):"hidden"!==t.overflowY&&(s("hidden"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight),i!==n){i=n;var o=c("autosize:resized");try{r.dispatchEvent(o)}catch(e){}}}}function i(e){var t=p.get(e);t&&t.destroy()}function d(e){var t=p.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return r(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],d),e}),t.default=l,e.exports=t.default});
   <!-- Копирование в буфер обмена -->
@@ -4742,6 +4742,7 @@ wow
   .page-logo.show-page,
   .page-qr-code.show-page,
   .page-referral.show-page,
+	.page-register-wallet .big-key.show,
   .page-register-wallet .new-key.show,
   .page-register-wallet .new-wallet.show,
   .page-register-wallet .result-change.show,
@@ -5620,7 +5621,9 @@ font-size: 17px;
       }
   }
 #password-input {
-width: 100%
+	width: 100%;
+	margin-left: 11px;
+	margin-right: 11px;
 }
   @media  (max-width:500px) {
     .textarea  {
@@ -5761,11 +5764,6 @@ font-size: 15px;
   }
 .inputs {
   width: auto;
-}
-@media (max-width:500px)  {
- .inputs {
-  width: 70% !important;
-}
 }
   .checkbox input {
       position: absolute;
@@ -7228,6 +7226,17 @@ body {
       padding-bottom: 10px;
       flex-direction: column
   }
+	.page-key-change .result-change{
+		width: 100%;
+    max-width: 600px;
+    flex-direction: column;
+    margin: 0 auto;
+	}
+	.page-key-change .inputs{
+		width: 85%; 
+		display: flex; 
+		justify-content: center;
+	}
   .page-key-change .new-key,
   .page-key-change .new-wallet,
   .page-key-change .result-change,
@@ -7237,10 +7246,13 @@ body {
       justify-content: space-between;
       margin: 0 auto
   }
-	.page-key-change .attention-text.hide,
+	.page-key-change .new-key {
+    margin-top: 15px;
+	}
   .page-key-change .new-key.hide,
   .page-key-change .new-wallet.hide,
   .page-key-change .result-change.hide,
+	.page-register-wallet .big-key.hide,
   .page-register-wallet .new-key.hide,
   .page-register-wallet .new-wallet.hide,
   .page-register-wallet .result-change.hide {
@@ -7250,6 +7262,7 @@ body {
       .page-key-change .new-key,
       .page-key-change .new-wallet,
       .page-key-change .result-change,
+			.page-register-wallet .big-key,
       .page-register-wallet .new-key,
       .page-register-wallet .new-wallet,
       .page-register-wallet .result-change {
@@ -7265,14 +7278,18 @@ body {
   .page-register-wallet .result-change .custom-input {
       width: 100%
   }
-  .page-key-change .new-key .custom-input svg,
-  .page-key-change .new-wallet .custom-input svg,
   .page-key-change .result-change .custom-input svg,
   .page-register-wallet .new-key .custom-input svg,
   .page-register-wallet .new-wallet .custom-input svg,
   .page-register-wallet .result-change .custom-input svg {
       fill: #c1c1c1
   }
+	.page-key-change .new-key .custom-input svg,
+	.page-key-change .new-wallet .custom-input svg,
+  .page-register-wallet .new-wallet .custom-input svg{
+		fill: #e7af28;
+		width: 44px;
+	}
   .page-key-change .new-key .custom-input svg.hide,
   .page-key-change .new-wallet .custom-input svg.hide,
   .page-key-change .result-change .custom-input svg.hide,
@@ -7299,6 +7316,10 @@ body {
       .page-register-wallet .result-change .custom-input input {
           width: 100%
       }
+			.page-key-change .new-key .custom-input input,
+      .page-key-change .new-wallet .custom-input input {
+				margin-right: 0px;
+			}
   }
   .page-key-change .new-key button,
   .page-key-change .new-wallet button,
@@ -7739,22 +7760,7 @@ viewBox="0 0 40532.6 40532.69"
           <div class="item-4"></div>
           <div class="item-5"></div>
         </div>
-				<div class="attention-text hide">ATTENTION!!! <br><br>After changing the Private Key, the old Private Key will stop working and you will not be able to restore it!</div>
-        <div class="new-key hide">
-          <div class="custom-input">
-            <svg class="icon_key_gray">
-              <use xlink:href="#icon_key_gray" />
-            </svg>
-            <input class="secretKey" title='Private Key' maxlength="3000"  placeholder="PRIVATE KEY" type="text" />
-          </div>
-          <button type="button" title='Save' class="send-key-change" style="transition: 1s;">
-            <svg>
-              <use xlink:href="#send_icon_only" />
-            </svg>
-          </button>
-        </div>
-         <div class="result-chang hide" style="width: 100%;
-    max-width: 550px;   flex-direction: column; margin: 0 auto;display: none;">
+        <div class="result-change hide">
          <div class="big-key" style="text-align: center;">
              <svg style='fill: #c1c1c1;' xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="49.9997mm" height="49.9998mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
 viewBox="0 0 1289.77 1289.77"
@@ -7768,7 +7774,8 @@ viewBox="0 0 1289.77 1289.77"
  </g>
 </svg>
          </div>
-          <div class="custom-input" style="display: flex;    align-items: flex-start;   justify-content: center;">
+				 <div class="attention-text">ATTENTION!!! <br><br>After changing the Private Key, the old Private Key will stop working and you will not be able to restore it!</div>
+          <div class="custom-input">
               <svg style='fill: #e7af28;' xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="49.9997mm" height="49.9998mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
 viewBox="0 0 1289.77 1289.77"
  xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -7780,11 +7787,11 @@ viewBox="0 0 1289.77 1289.77"
   </g>
  </g>
 </svg>
-<div class="inputs" style="width: 70%; display: flex; justify-content: center;">
+<div class="inputs">
 <input class="secretKey" title='New Private Key' maxlength="3000" id="password-input"  type="text" />
 </div>
 <span title='Copy New Private Key'>
- <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" data-clipboard-target="#password-input" class="copy_in" width="49.9997mm" height="49.9998mm" version="1.1" style="    cursor: pointer; margin-left: 20px; shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+ <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" data-clipboard-target="#password-input" class="copy_in" width="49.9997mm" height="49.9998mm" version="1.1" style="    cursor: pointer; shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
 viewBox="0 0 1289.77 1289.77"
  xmlns:xlink="http://www.w3.org/1999/xlink">
  <g id="Слой_x0020_1">
@@ -7797,6 +7804,19 @@ viewBox="0 0 1289.77 1289.77"
 </svg>
 </span>
           </div>
+        </div>
+				<div class="new-key hide">
+          <div class="custom-input">
+            <svg class="icon_key_gray">
+              <use xlink:href="#icon_key_gray" />
+            </svg>
+            <input class="secretKey" title='Private Key' maxlength="3000"  placeholder="PRIVATE KEY" type="text" />
+          </div>
+          <button type="button" title='Save' class="send-key-change" style="transition: 1s;">
+            <svg>
+              <use xlink:href="#send_icon_only" />
+            </svg>
+          </button>
         </div>
       </div>
       <div class="page-register-wallet hide-page">
@@ -7820,6 +7840,19 @@ viewBox="0 0 1289.77 1289.77"
           <div class="item-4"></div>
           <div class="item-5"></div>
         </div>
+				<div class="big-key hide" style="text-align: center;">
+						<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="49.9997mm" height="49.9998mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+						viewBox="0 0 2664.32 2664.32"
+						 xmlns:xlink="http://www.w3.org/1999/xlink">
+						 <g id="Слой_x0020_1">
+							<metadata id="CorelCorpID_0Corel-Layer"/>
+							<g id="_543404352">
+							 <path class="fil0" style='fill:#c1c1c1;' d="M2094.45 1867.9c-85.62,0 -155.31,-69.69 -155.31,-155.31l0 -257.87c0,-85.62 69.69,-155.31 155.31,-155.31l404.63 0c2.43,0 4.87,0.09 7.29,0.17l0 -256.95c0,-66.17 -53.59,-119.75 -119.75,-119.75l-887.49 0c29.86,45.37 47.3,99.54 47.3,157.74 0,158.5 -129.23,287.73 -287.72,287.73l-215.27 0 0 215.27c0,149.61 -115.06,273.05 -261.23,286.47l0 254.52c0,66.16 53.59,119.75 119.75,119.75l1484.66 0c66.17,0 119.75,-53.59 119.75,-119.75l0 -256.95c-2.43,0.09 -4.87,0.17 -7.29,0.17l-404.63 0 0 0.09zm-1841.66 -945.02l345.17 0 0 -345.17c0,-86.79 71.03,-157.74 157.74,-157.74l0 0c86.79,0 157.74,71.03 157.74,157.74l0 345.17 345.17 0c86.79,0 157.73,71.03 157.73,157.74l0 0c0,86.79 -70.94,157.74 -157.73,157.74l-345.17 0 0 345.17c0,86.79 -71.03,157.74 -157.74,157.74l0 0c-86.79,0 -157.74,-71.03 -157.74,-157.74l0 -345.17 -345.17 0c-86.79,0 -157.74,-71.03 -157.74,-157.74l0 0c0,-86.79 71.03,-157.74 157.74,-157.74zm1925.35 -219.38c-26.75,-81.09 -114.22,-125.12 -195.31,-98.37l-608.33 201.01 837.6 0 -33.96 -102.65 0.01 0zm320.93 680.94l-404.63 0c-38.83,0 -70.19,31.45 -70.19,70.19l0 257.87c0,38.83 31.45,70.19 70.19,70.19l404.63 0c38.74,0 70.19,-31.45 70.19,-70.19l0 -257.87c0,-38.74 -31.45,-70.19 -70.19,-70.19zm-265.25 300.47c-55.93,0 -101.3,-45.37 -101.3,-101.3 0,-55.93 45.37,-101.3 101.3,-101.3 55.93,0 101.3,45.37 101.3,101.3 0,55.93 -45.37,101.3 -101.3,101.3z"/>
+							 <polygon class="fil1" style='fill:none' points="-0,0 2664.32,0 2664.32,2664.32 -0,2664.32 "/>
+							</g>
+						 </g>
+						</svg>
+					</div>
         <div class="new-wallet hide">
           <div class="custom-input">
             <svg class="icon_key_gray">
@@ -7834,19 +7867,6 @@ viewBox="0 0 1289.77 1289.77"
           </button>
         </div>
         <div class="new-key hide" style="  width: 100%; max-width: 550px ;  flex-direction: column; align-items: center;">
-        <div class="big-key" style="text-align: center;">
-          <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="49.9997mm" height="49.9998mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
-          viewBox="0 0 2664.32 2664.32"
-           xmlns:xlink="http://www.w3.org/1999/xlink">
-           <g id="Слой_x0020_1">
-            <metadata id="CorelCorpID_0Corel-Layer"/>
-            <g id="_543404352">
-             <path class="fil0" style='fill:#c1c1c1;' d="M2094.45 1867.9c-85.62,0 -155.31,-69.69 -155.31,-155.31l0 -257.87c0,-85.62 69.69,-155.31 155.31,-155.31l404.63 0c2.43,0 4.87,0.09 7.29,0.17l0 -256.95c0,-66.17 -53.59,-119.75 -119.75,-119.75l-887.49 0c29.86,45.37 47.3,99.54 47.3,157.74 0,158.5 -129.23,287.73 -287.72,287.73l-215.27 0 0 215.27c0,149.61 -115.06,273.05 -261.23,286.47l0 254.52c0,66.16 53.59,119.75 119.75,119.75l1484.66 0c66.17,0 119.75,-53.59 119.75,-119.75l0 -256.95c-2.43,0.09 -4.87,0.17 -7.29,0.17l-404.63 0 0 0.09zm-1841.66 -945.02l345.17 0 0 -345.17c0,-86.79 71.03,-157.74 157.74,-157.74l0 0c86.79,0 157.74,71.03 157.74,157.74l0 345.17 345.17 0c86.79,0 157.73,71.03 157.73,157.74l0 0c0,86.79 -70.94,157.74 -157.73,157.74l-345.17 0 0 345.17c0,86.79 -71.03,157.74 -157.74,157.74l0 0c-86.79,0 -157.74,-71.03 -157.74,-157.74l0 -345.17 -345.17 0c-86.79,0 -157.74,-71.03 -157.74,-157.74l0 0c0,-86.79 71.03,-157.74 157.74,-157.74zm1925.35 -219.38c-26.75,-81.09 -114.22,-125.12 -195.31,-98.37l-608.33 201.01 837.6 0 -33.96 -102.65 0.01 0zm320.93 680.94l-404.63 0c-38.83,0 -70.19,31.45 -70.19,70.19l0 257.87c0,38.83 31.45,70.19 70.19,70.19l404.63 0c38.74,0 70.19,-31.45 70.19,-70.19l0 -257.87c0,-38.74 -31.45,-70.19 -70.19,-70.19zm-265.25 300.47c-55.93,0 -101.3,-45.37 -101.3,-101.3 0,-55.93 45.37,-101.3 101.3,-101.3 55.93,0 101.3,45.37 101.3,101.3 0,55.93 -45.37,101.3 -101.3,101.3z"/>
-             <polygon class="fil1" style='fill:none' points="-0,0 2664.32,0 2664.32,2664.32 -0,2664.32 "/>
-            </g>
-           </g>
-          </svg>
-        </div>
         <div class="custom-input" style=" display: flex;   align-items: center;  justify-content: space-between;">
  <svg xmlns="http://www.w3.org/2000/svg" class='eee'  xml:space="preserve" width="49.9997mm" height="49.9998mm" version="1.1"
 viewBox="0 0 2664.32 2664.32"
@@ -9181,37 +9201,38 @@ function genrandpass(type, stop) {
   if (abort != 1) {
     if (stop != 1) {
       if (randomevent_temp && randomevent_temp.length > 1) {
+				generation_complexity= 6;
         if (place == 1) {
-          if (randomevent.length / 4 == 99.75) {
+          if (randomevent.length / generation_complexity >= 99.75) {
             $('.page-key-change .preloader-container').removeClass('hide');
             $('.progress')[0].classList.add('hide');
             $('#genpass')[0].classList.add('hide');
           }
-          $('.progress')[0].lastElementChild.innerText = parseInt(randomevent.length / 4) + '%';
-          if (parseInt(randomevent.length / 4) > 50) {
+          $('.progress')[0].lastElementChild.innerText = parseInt(randomevent.length / generation_complexity) + '%';
+          if (randomevent.length / generation_complexity > 50) {
             $('.progress')[0].lastElementChild.style.color = 'white';
             $('.progress')[0].lastElementChild.style.zIndex = 1;
           }
-          $('.loading')[0].style.width = parseInt(randomevent.length / 4) + '%';
+          $('.loading')[0].style.width = parseInt(randomevent.length / generation_complexity) + '%';
         }
         if (place == 2) {
-          if (randomevent.length / 4 == 99.75) {
+          if (randomevent.length / generation_complexity >= 99.75) {
             $('.page-register-wallet .preloader-container').removeClass('hide');
             $('.progress')[1].classList.add('hide');
             $('#genpass2')[0].classList.add('hide');
           }
-          $('.progress')[1].lastElementChild.innerText = parseInt(randomevent.length / 4) + '%';
-          if (parseInt(randomevent.length / 4) > 50) {
+          $('.progress')[1].lastElementChild.innerText = parseInt(randomevent.length / generation_complexity) + '%';
+          if (randomevent.length / generation_complexity > 50) {
             $('.progress')[1].lastElementChild.style.color = 'white';
             $('.progress')[1].lastElementChild.style.zIndex = 1;
           }
-          $('.loading')[1].style.width = parseInt(randomevent.length / 4) + '%';
+          $('.loading')[1].style.width = parseInt(randomevent.length / generation_complexity) + '%';
         }
         randomevent.push(randomevent_temp);
         randomevent_temp = '';
-        if (randomevent.length >= 400) {
+        if (randomevent.length / generation_complexity >= 100) {
           //генерация случайной фразы
-          password_gen = method(randomevent.join('').shuffle(), 50000 * 4).shuffle(); // $("#result").html(password_gen); //Shake-256 на 50000 символов
+          password_gen = method(randomevent.join('').shuffle(), 50000 * 4).shuffle(); //Shake-256 на 50000 символов
           //очищаем все данные
           clearTimeout(genrandpasstimeout);
           stop = 1;
@@ -9220,15 +9241,16 @@ function genrandpass(type, stop) {
             password_gen_falcon = '';
             password_gen_falcon = falcon.createKeyPair(128, password_gen);
             if (place == 1) {
-              $(".page-key-change .result-chang .secretKey").val(password_gen_falcon[0]);
+              $(".page-key-change .result-change .secretKey").val(password_gen_falcon[0]);
 							$('.page-key-change .preloader-container').addClass('hide');
-              $('.page-key-change .new-key')[0].classList.remove('hide');
-							$('.page-key-change .attention-text')[0].classList.remove('hide');
+              $('.page-key-change .result-change')[0].classList.remove('hide');
+							$('.page-key-change .new-key')[0].classList.remove('hide');
               document.body.style.overflow = '';
             }
             if (place == 2) {
               $(".page-register-wallet .new-key .secretKey").val(password_gen_falcon[0]);
               $('.page-register-wallet .preloader-container').addClass('hide');
+							$('.page-register-wallet .big-key').removeClass('hide');
               $('.new-wallet')[0].classList.remove('hide');
               document.body.style.overflow = '';
             }
@@ -10221,9 +10243,11 @@ function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 				try {signpubnew = falcon.SecretKey.unpack(secretKeyNew).getPublicKey().pack();}
 				catch(e) {signpubnew='';}
 				if(!signpubnew){errorAllDisplay();return false;}
+				signpubnew_check= signpubnew;
 				signpubnew = sha_dec(signpubnew);
         signnew = falcon.sign(secretKeyNew, wallet + height);
 			} else {
+				signpubnew_check= '';
 				signpubnew= '';
 				signnew= '';
 			}
@@ -10247,6 +10271,7 @@ function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 								signpubreg: signpubreg,
 								signreg: signreg,
 								signpubnew: signpubnew,
+								signpubnew_check: signpubnew_check,
 								signnew: signnew,
 								signpub: signpub,
 								sign: sign,
@@ -10261,6 +10286,8 @@ function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 			})
 			if(typeof(json_send)== "undefined" || !json_send || typeof(json_send.noda)== "undefined"){errorAllDisplay();return false;}
 			else if(json_send.noda=='not_activated'){errorAllDisplay();menuPages('page-settings');errorInput('#IPnodaSettings');return false;}
+			else if(typeof(json_send.signpubnew_check)!= "undefined" && json_send.signpubnew_check=='false'){errorAllDisplay();return 'signnew';}
+			else if(signpubreg && typeof(json_send.recipient)!= "undefined" && json_send.recipient=='false'){errorAllDisplay();return 'signreg';}
 			else if(typeof(json_send.send)== "undefined" || json_send.send!='true'){return 'secret';return false;}
 			else if(password && (typeof(json_send.password)== "undefined" || json_send.password!='true')){errorAllDisplay();return false;}
 			else {
@@ -10343,7 +10370,6 @@ function clear_newkey_and_newwallet(){
 	$('.cleare').css('background-color','');
 	$('.not_save').remove();
 	$('.new-key').removeClass('tx');
-	$('.inputs').css('width', '70%');
 	$('.result-chang').removeClass('tx_two');
 	document.body.style.overflow = '';
 	$('.page-register-wallet').children().addClass('hide');
@@ -10357,8 +10383,8 @@ function clear_newkey_and_newwallet(){
 	t = 0;
 	abort = 0;
 	place = 0;
-	$('.attention-text').addClass('hide');
 	$('.new-key').addClass('hide');
+	$('.big-key').addClass('hide');
 	$('.new-wallet').addClass('hide');
 	$('.result-chang').css('display', 'none');
 	$('.progress').children('div').css('width', '0%');
@@ -10379,13 +10405,13 @@ $('.send-key-change').click(function(){
 	if(!secretKey || secretKey.length<1000){errorInput(".page-key-change .new-key .secretKey");return false;}
 	//чтобы деактивировать кнопку отправки до подвисания
 	setTimeout(function() {
-		secretKeyNew= $(".page-key-change .result-chang .secretKey").val().replace(/[^\da-zA-Z]/ig,'').toLowerCase();
+		secretKeyNew= $(".page-key-change .result-change .secretKey").val().replace(/[^\da-zA-Z]/ig,'').toLowerCase();
 		check= send(1,1,'',secretKey,'',secretKeyNew,'');
-		if(check=='secret' || check=='secre'){errorInput(".page-key-change .new-key .secretKey");return false;}
+		if(check=='signnew'){clear_newkey_and_newwallet();return false;}
+		else if(check=='secret'){errorInput(".page-key-change .new-key .secretKey");return false;}
 		else if(check){
 			$(".page-key-change .new-key .secretKey").val('');
 			$('.new-key').addClass('hide');
-			$('.attention-text').addClass('hide');
 			$('.result-chang').css('display', 'block');
 			$('.page-key-change').find('.result-chang').removeClass('hide').addClass('anim-show');
 		}
@@ -10400,7 +10426,8 @@ $('.send-register-wallet').click(function(){
 	setTimeout(function() {
 		secretKeyReg= $(".page-register-wallet .new-key .secretKey").val().replace(/[^\da-zA-Z]/ig,'').toLowerCase();
 		check= send('00',3,'',secretKey,secretKeyReg,'','');
-		if(check=='secret'){errorInput(".page-register-wallet .new-wallet .secretKey");return false;}
+		if(check=='signreg'){clear_newkey_and_newwallet();return false;}
+		else if(check=='secret'){errorInput(".page-register-wallet .new-wallet .secretKey");return false;}
 		else if(check){
 			$(".page-register-wallet .new-wallet .secretKey").val('');
 			$('.new-wallet').addClass('hide');
