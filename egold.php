@@ -1,10 +1,11 @@
-<?php //v1.5
+<?php $version= 1.6;//версия egold.php
 ini_set("memory_limit", "2048M");
-ini_set('error_reporting', E_ALL); 
-ini_set('display_errors', 0);
-ini_set('log_errors','on');
-ini_set('error_log', __DIR__ . '/log_error.log');
+// ini_set('error_reporting', E_ALL); 
+// ini_set('display_errors', 0);
+// ini_set('log_errors','on');
+// ini_set('error_log', __DIR__ . '/log_error.log');
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
+if(isset($_REQUEST['version'])){echo '{"version": "'.$version.'"}'; exit;}
 if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
 if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}'; exit;}
@@ -17,8 +18,8 @@ $_SESSION['timer_start']=$timer_start;
 usleep(mt_rand(0.001*1000000,0.1*1000000));
 include "egold_settings.php";
 $limit_synch= 1000;
-$percent_4= 1+0.04/(30*24*60*60);
-$percent_5= 1+0.05/(30*24*60*60);
+$percent_4= 1.0000000154321;
+$percent_5= 1.0000000192901;
 $log=0;
 function convert_ipv6($ip){
   if(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)){
@@ -143,7 +144,9 @@ CREATE TABLE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` (`name`, `value`) VALUES
 ('synch_now', '0'),
-('synch_wallet', '1');
+('synch_wallet', '1'),
+('transactionscount', '0'),
+('version', '".$version."');
 DROP TABLE IF EXISTS `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users`;
 CREATE TABLE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` (
   `wallet` bigint(18) UNSIGNED NOT NULL DEFAULT '0',
@@ -164,6 +167,8 @@ CREATE TABLE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` (
   `nodause` varchar(40) NOT NULL DEFAULT '',
   `balance` bigint(20) NOT NULL DEFAULT '0',
   `date` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
+	`balance_ref` bigint(20) NOT NULL DEFAULT '0',
+	`date_ref` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   `height` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   `signpubnew` varchar(514) NOT NULL DEFAULT '',
   `signnew` varchar(1440) NOT NULL DEFAULT '',
@@ -222,8 +227,9 @@ COMMIT;";
       $mysqli_affected_rows++;
       } else break;
   }
-  if($mysqli_affected_rows==26)echo '{"install_bd": "true", "message": "Setting a task cron to start php script \'/egold.php synch\' (it is recommended) or \'http://'.(filter_var($noda_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)?"[".$noda_ip."]":$noda_ip).'/egold.php?type=synch\' every minute and wait for synchronization"}';
-  else {
+  if($mysqli_affected_rows==26){
+		echo '{"install_bd": "true", "message": "Setting a task cron to start php script \'/egold.php synch\' (it is recommended) or \'http://'.(filter_var($noda_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)?"[".$noda_ip."]":$noda_ip).'/egold.php?type=synch\' every minute and wait for synchronization"}';
+  } else {
     echo '{"install_bd": "false"}';
     $query= "DROP TABLE IF EXISTS `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_contacts`;
 DROP TABLE IF EXISTS `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history`;
@@ -240,6 +246,16 @@ COMMIT;";
 }
 query_bd("SELECT count(*) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `date`>=UNIX_TIMESTAMP()-9 LIMIT 1;");
 if(isset($sqltbl['count']) && $sqltbl['count']>$ddos_protect){echo '{"noda":"timeout"}';mysqli_close($mysqli_connect);exit;}
+query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='version'");
+if(!isset($sqltbl['value']) || $sqltbl['value']<1.6){
+	usleep(1*1000000);
+	query_bd("ALTER TABLE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` ADD `balance_ref` BIGINT(20) NOT NULL DEFAULT '0' AFTER `date`;");
+	query_bd("ALTER TABLE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` ADD `date_ref` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0' AFTER `balance_ref`;");
+	query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='".$version."', `name`='version';");
+	usleep(1*1000000);
+	query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance_ref`=`balance`, `date_ref`=`date`, `view`=IF(`view`=1,3,`view`) WHERE `balance_ref`=0 or `date_ref`=0;");
+	usleep(1*1000000);
+}
 $type['type']="a-z";
 $type['wallet']="0-9";
 $type['recipient']=$type['wallet'];
@@ -285,10 +301,10 @@ $type['synch_wallet']="0-9";
 foreach($_REQUEST as $key=> $val) if(strlen($key)<100 && $val && strlen($val)<1440 && in_array($key,array_keys($type))) $request[$key]= preg_replace("/[^".$type[$key]."]/",'',$val);
 include 'egold_crypto/falcon.php';
 function bchexdec($hex){
-	$dec = 0; $len = strlen($hex);
-	for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
-	return $dec;
-}
+      $dec = 0; $len = strlen($hex);
+      for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
+      return $dec;
+  }
 function sha_dec($str){return substr(bchexdec(gen_sha3($str,19)),0,19);}
 function signcheck($str,$signpub,$sign){return ($signpub && $str && $sign && Falcon\verify($signpub, $str, $sign))? 1: 0;}
 if(isset($request['signpubnew_check'])){
@@ -376,7 +392,7 @@ if(isset($sqltbl['now']) && $sqltbl['now']){
             $wallet_return['balance']= $wallet_return['balance']-$sqltbl['balancecheck'];
          }
         } 
-        if($time-$wallet_return['date']>=0 /*&& $wallet_return['balancecheck']==0*/){
+        if($time-$wallet_return['date']>=0){
           $wallet_return['percent_4']= (int)($wallet_return['balance']*(POW($GLOBALS['percent_4'],($time-$wallet_return['date']))-1));
           $wallet_return['percent_5']= (int)($wallet_return['balance']*(POW($GLOBALS['percent_5'],($time-$wallet_return['date']))-1));
         } else {
@@ -507,30 +523,34 @@ if($stop!=1){
           if(isset($recipient['wallet'])){
             query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($recipient['noda']==$recipient['nodause']?$recipient['percent_5']:$recipient['percent_4'])."'+'".$sqltbl_arr['money']."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$recipient['wallet']."';");
          } else if($sqltbl_arr['signpubreg'] && $sqltbl_arr['signreg']){
-            query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$sqltbl_arr['recipient']."',`ref1`= '".$wallet['wallet']."',`ref2`= '".$wallet['ref1']."',`ref3`= '".$wallet['ref2']."',`balance`= '3',`height`= '0',`date` = '".$sqltbl_arr['date']."',`signpub`= '".$sqltbl_arr['signpubreg']."',`sign`= '".$sqltbl_arr['signreg']."', `checkwallet`='".$json_arr['time']."', `view`=3;");
+            query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$sqltbl_arr['recipient']."',`ref1`= '".$wallet['wallet']."',`ref2`= '".$wallet['ref1']."',`ref3`= '".$wallet['ref2']."',`balance`= '3',`height`= '0',`date` = '".$sqltbl_arr['date']."',`balance_ref`=`balance`, `date_ref`=`date`, `signpub`= '".$sqltbl_arr['signpubreg']."',`sign`= '".$sqltbl_arr['signreg']."', `checkwallet`='".$json_arr['time']."', `view`=3;");
          }
-          query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='".($sqltbl_arr['nodaown']==1?$sqltbl_arr['nodause']:'')."', `nodause`='".$sqltbl_arr['nodause']."', `balance`='".$wallet_balance."', `height`='".$sqltbl_arr['height']."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`), `signpubnew`='".$sqltbl_arr['signpubnew']."', `signnew`='".$sqltbl_arr['signnew']."', `signpub`='".$sqltbl_arr['signpub']."', `sign`='".$sqltbl_arr['sign']."' WHERE `wallet`='".$wallet['wallet']."';");
+          query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='".($sqltbl_arr['nodaown']==1?$sqltbl_arr['nodause']:'')."', `nodause`='".$sqltbl_arr['nodause']."', `balance`='".$wallet_balance."', `balance_ref`=`balance`, `height`='".$sqltbl_arr['height']."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `date_ref`=`date`, `view`=IF(`view`=1,3,`view`), `signpubnew`='".$sqltbl_arr['signpubnew']."', `signnew`='".$sqltbl_arr['signnew']."', `signpub`='".$sqltbl_arr['signpub']."', `sign`='".$sqltbl_arr['sign']."' WHERE `wallet`='".$wallet['wallet']."';");
           if(mysqli_affected_rows($mysqli_connect)>=1){
-           if($wallet['ref1']>1 && $percent/4>=1){
-              $ref= wallet($wallet['ref1'],$sqltbl_arr['date'],1);
-              query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($ref['noda']==$ref['nodause']?$ref['percent_5']:$ref['percent_4'])."'+'".(int)($percent/4)."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['ref1']."';");
-              unset($ref);
-            }
-            if($wallet['ref2']>1 && $percent/8>=1){
-              $ref= wallet($wallet['ref2'],$sqltbl_arr['date'],1);
-              query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($ref['noda']==$ref['nodause']?$ref['percent_5']:$ref['percent_4'])."'+'".(int)($percent/8)."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['ref2']."';");
-              unset($ref);
-            }
-            if($wallet['ref3']>1 && $percent/16>=1){
-              $ref= wallet($wallet['ref3'],$sqltbl_arr['date'],1);
-              query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($ref['noda']==$ref['nodause']?$ref['percent_5']:$ref['percent_4'])."'+'".(int)($percent/16)."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['ref3']."';");
-              unset($ref);
-            }
-            if($percent/4>=1 && $wallet['ref1']>1){
-              query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$sqltbl_arr['height']."';");
-              if(mysqli_affected_rows($mysqli_connect)>=1){}
-              query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` SET `wallet`= '".$sqltbl_arr['wallet']."',`ref1`= '".$wallet['ref1']."',`ref2`= '".$wallet['ref2']."',`ref3`= '".$wallet['ref3']."' ".(isset($noda_wallet)?",`nodawallet`= '".$noda_wallet."'":'').",`money1`= '".($wallet['ref1']>1?(int)($percent/4):'0')."',`money2`= '".($wallet['ref2']>1?(int)($percent/8):'0')."',`money3`= '".($wallet['ref3']>1?(int)($percent/16):'0')."',`height` = '".$sqltbl_arr['height']."',`date` = '".$sqltbl_arr['date']."';");
-            }
+						if($json_arr['time']>=1593579600 && $wallet['balance_ref']>0 && $wallet['date_ref']>0){
+							if($sqltbl_arr['nodaown']==1)$percent= (int)($wallet['balance_ref']*(POW($GLOBALS['percent_5'],($sqltbl_arr['date']-$wallet['date_ref']))-1));
+							else $percent= (int)($wallet['balance_ref']*(POW($GLOBALS['percent_4'],($sqltbl_arr['date']-$wallet['date_ref']))-1));
+						}
+						if($wallet['ref1']>1 && $percent/4>=1){
+							$ref= wallet($wallet['ref1'],$sqltbl_arr['date'],1);
+							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($ref['noda']==$ref['nodause']?$ref['percent_5']:$ref['percent_4'])."'+'".(int)($percent/4)."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['ref1']."';");
+							unset($ref);
+						}
+						if($wallet['ref2']>1 && $percent/8>=1){
+							$ref= wallet($wallet['ref2'],$sqltbl_arr['date'],1);
+							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($ref['noda']==$ref['nodause']?$ref['percent_5']:$ref['percent_4'])."'+'".(int)($percent/8)."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['ref2']."';");
+							unset($ref);
+						}
+						if($wallet['ref3']>1 && $percent/16>=1){
+							$ref= wallet($wallet['ref3'],$sqltbl_arr['date'],1);
+							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($ref['noda']==$ref['nodause']?$ref['percent_5']:$ref['percent_4'])."'+'".(int)($percent/16)."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['ref3']."';");
+							unset($ref);
+						}
+						if($percent/4>=1 && $wallet['ref1']>1){
+							query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$sqltbl_arr['height']."';");
+							if(mysqli_affected_rows($mysqli_connect)>=1){}
+							query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` SET `wallet`= '".$sqltbl_arr['wallet']."',`ref1`= '".$wallet['ref1']."',`ref2`= '".$wallet['ref2']."',`ref3`= '".$wallet['ref3']."' ".(isset($noda_wallet)?",`nodawallet`= '".$noda_wallet."'":'').",`money1`= '".($wallet['ref1']>1?(int)($percent/4):'0')."',`money2`= '".($wallet['ref2']>1?(int)($percent/8):'0')."',`money3`= '".($wallet['ref3']>1?(int)($percent/16):'0')."',`height` = '".$sqltbl_arr['height']."',`date` = '".$sqltbl_arr['date']."';");
+						}
             if($sqltbl_arr['nodaown']==1){
               query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='', `view`=IF(`view`=1,3,`view`) WHERE `noda`='".$sqltbl_arr['nodause']."' and `wallet`!='".$wallet['wallet']."';");
             }
@@ -546,7 +566,7 @@ if($stop!=1){
               if($sqltbl_arr['nodause']==$noda_ip){
                 query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=1, `date`='".$sqltbl_arr['date']."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and (`nodatrue`!=1 or `date`<'".$sqltbl_arr['date']."'-9*24*60*60);");
 								query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`=`value`+1 WHERE `name`='transactionscount';");
-								if(!(mysqli_affected_rows($mysqli_connect)>=1))query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` (`name`, `value`) VALUES ('transactionscount', '1');");
+								if(mysqli_affected_rows($mysqli_connect)>=1){}
               }else query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=0 WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
               if(mysqli_affected_rows($mysqli_connect)>=1){}
             }
@@ -556,7 +576,7 @@ if($stop!=1){
           }
           query_bd("SELECT COUNT(*) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `checkhistory`=2 and `wallet`=".$sqltbl_arr['wallet']." and `height`=".$sqltbl_arr['height'].";");
           if(isset($sqltbl['count'])){
-            query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`-2*".$sqltbl['count']." WHERE `wallet`='".$wallet['wallet']."' and `view`>0;");
+            query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`-2*".$sqltbl['count'].", `balance_ref`=`balance` WHERE `wallet`='".$wallet['wallet']."' and `view`>0;");
             if(mysqli_affected_rows($mysqli_connect)>=1){
             }
           }
@@ -617,7 +637,7 @@ if($stop!=1){
     $request_sha_temp['wallet']= $request['wallet'];
     $request_sha_temp['recipient']= $request['recipient'];
     $request_sha_temp['money']= $request['money'];
-		$request_sha_temp['pin']= $request['pin'];
+	$request_sha_temp['pin']= $request['pin'];
     $request_sha_temp['height']= $request['height'];
     $request_sha_temp['nodawallet']= $nodawallet;
     $request_sha_temp['nodause']= $nodause;
@@ -686,7 +706,7 @@ if($stop!=1){
             $wallet['height']=$sqltbl['height'];
             $wallet['date']=$sqltbl['date'];
             $wallet['money']=$sqltbl['money'];
-						$wallet['pin']=$sqltbl['pin'];
+			$wallet['pin']=$sqltbl['pin'];
          }
           if($synch==1 && $wallet['height']<$request['height']-1){
             $post['type']= 'history';
@@ -695,7 +715,7 @@ if($stop!=1){
             $post['order']= 'asc';
             $post['limit']= 100;
             $post['all']= 3;
-						$wallet= transaction_check($host_ip,$post,$wallet,$request);
+           $wallet= transaction_check($host_ip,$post,$wallet,$request);
           }
           if($wallet['height']<$request['height']-1)$checkhistory= -1;
           else if($wallet['height']==$request['height']-1 && (($wallet['signpubnew']=='' && $wallet['signpub']==$request['signpub']) || ($wallet['signpubnew']== sha_dec($request['signpub']) && signcheck($wallet['wallet'].$wallet['height'],$request['signpub'],$wallet['signnew'])==1))){
@@ -779,7 +799,7 @@ if($stop!=1){
           $send_arr['wallet']=$value['wallet'];
           $send_arr['recipient']=$value['recipient'];
           $send_arr['money']=$value['money'];
-					$send_arr['pin']=$value['pin'];
+		  $send_arr['pin']=$value['pin'];
           $send_arr['height']=$value['height'];
           $send_arr['nodawallet']=$value['nodawallet'];
           $send_arr['nodause']=$value['nodause'];
@@ -917,13 +937,14 @@ if($stop!=1){
                      && isset($value2['nodause']) && preg_replace("/[^0-9a-z.:]/i",'',$value2['nodause'])==$value2['nodause'] && strlen($value2['nodause'])<=40 
                      && isset($value2['balance']) && preg_replace("/[^0-9]/i",'',$value2['balance'])==$value2['balance']
                      && isset($value2['date']) && preg_replace("/[^0-9]/i",'',$value2['date'])==$value2['date'] && $value2['date']<=$json_arr['time']+2
+										 && isset($value2['balance_ref']) && preg_replace("/[^0-9]/i",'',$value2['balance_ref'])==$value2['balance_ref']
+										 && isset($value2['date_ref']) && preg_replace("/[^0-9]/i",'',$value2['date_ref'])==$value2['date_ref'] && $value2['date_ref']<=$json_arr['time']+2
                      && isset($value2['height']) && preg_replace("/[^0-9]/i",'',$value2['height'])==$value2['height']
                      && isset($value2['signpubnew']) && preg_replace("/[^0-9]/i",'',$value2['signpubnew'])==$value2['signpubnew'] && strlen($value2['signpubnew'])<=19
                      && isset($value2['signnew']) && preg_replace("/[^0-9a-z:]/i",'',$value2['signnew'])==$value2['signnew'] && strlen($value2['signnew'])<=1440
                      && isset($value2['signpub']) && preg_replace("/[^0-9a-z]/i",'',$value2['signpub'])==$value2['signpub'] && strlen($value2['signpub'])<=514
                      && isset($value2['sign']) && preg_replace("/[^0-9a-z:]/i",'',$value2['sign'])==$value2['sign'] && strlen($value2['sign'])<=1440
                       ){
-                    
                     if(!isset($balance_check[$value2['wallet']]) || $balance_check[$value2['wallet']]<=$nodas_balance_sum/2){
                       $balance_check[$value2['wallet']]= 0;
                       foreach($noda_balance_rand as $key3 => $value3){
@@ -943,15 +964,17 @@ if($stop!=1){
                       $wallet_add['nodause']=$value2['nodause'];
                       $wallet_add['balance']=$value2['balance'];
                       $wallet_add['date']=$value2['date'];
+											$wallet_add['balance_ref']=$value2['balance_ref'];
+											$wallet_add['date_ref']=$value2['date_ref'];
                       $wallet_add['height']=$value2['height'];
                       $wallet_add['signpubnew']=$value2['signpubnew'];
                       $wallet_add['signnew']=$value2['signnew'];
                       $wallet_add['signpub']=$value2['signpub'];
                       $wallet_add['sign']=$value2['sign'];
                       if(isset($post_synchwallets['synch_wallet']) && isset($value2['synch_wallet']) && $synch_wallet<$value2['wallet'])$synch_wallet=$value2['wallet'];
-                     if(!isset($noda_json_arr_all_wallets[$value2['wallet']]) || !in_array($wallet_add,$noda_json_arr_all_wallets[$value2['wallet']])){
+											if(!isset($noda_json_arr_all_wallets[$value2['wallet']]) || !in_array($wallet_add,$noda_json_arr_all_wallets[$value2['wallet']])){
                         $noda_json_arr_all_wallets[$value2['wallet']][]=$wallet_add;
-                     }
+											}
                       unset($wallet_add);
                     }
                   } else {
@@ -991,122 +1014,122 @@ if($stop!=1){
             else unset($noda_json_arr_all_wallets[$key]);
           }
           if(isset($noda_json_arr_all_wallets) && $noda_json_arr_all_wallets){
-           if($wallet_synch_end>0){
-              $wallets_check= $wallets_bd;
-              foreach ($noda_json_arr_all_wallets as $key => $value) {
-                if(!isset($wallets_check[$key]))$wallets_check[$key]= 1;
-              }
-            } else $wallets_check= $noda_json_arr_all_wallets;
-            $query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet` IN ('".implode("','",array_keys($wallets_check))."');";
-           $result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_wallet_date_check");
-           while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
-              if(isset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']])){
-                if(isset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['wallet'])
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['wallet']==$sqltbl_arr['wallet']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref1']==$sqltbl_arr['ref1']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref2']==$sqltbl_arr['ref2']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref3']==$sqltbl_arr['ref3']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['noda']==$sqltbl_arr['noda']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodause']==$sqltbl_arr['nodause']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['balance']==$sqltbl_arr['balance']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['date']==$sqltbl_arr['date']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']==$sqltbl_arr['height']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpubnew']==$sqltbl_arr['signpubnew']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signnew']==$sqltbl_arr['signnew']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpub']==$sqltbl_arr['signpub']
-                  && $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['sign']==$sqltbl_arr['sign']
-                  ){
-                  if($sqltbl_arr['view']==3 && ($noda_balance_noda_ip< $balance_check[$sqltbl_arr['wallet']] || ($noda_balance_noda_ip+$balance_check[$sqltbl_arr['wallet']])>0.5*$nodas_balance_sum_bd)){
-                    query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='', `view`=1 WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`=3;");
-                  } else if(((int)$sqltbl_arr['checkbalance']+$balance_check[$sqltbl_arr['wallet']]+($sqltbl_arr['view']>1 && (int)$sqltbl_arr['checkbalance']==0 && (int)$sqltbl_arr['checkbalanceall']==0?$noda_balance_noda_ip:0))>0.5*($nodas_balance_sum_bd-($sqltbl_arr['view']==0?$noda_balance_noda_ip:0))){
-                    query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='', `view`=1 WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
-                  } else if(((int)$sqltbl_arr['checkbalanceall']+$nodas_balance_sum)>=0.9*($nodas_balance_sum_bd-($sqltbl_arr['view']==0?$noda_balance_noda_ip:0))){
-                    if($sqltbl_arr['view']==0){
-                      query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`=0;");
-                    } else {
-                      query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='".$json_arr['time']."', `view`=0, `checknoda`='' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`>1;");
-                    }
-                  } else if($sqltbl_arr['view']>1 && ((int)$sqltbl_arr['checkbalance']==0 && (int)$sqltbl_arr['checkbalanceall']==0)){
-                    query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`=`checkbalance`+'".($balance_check[$sqltbl_arr['wallet']]+$noda_balance_noda_ip)."', `checkbalanceall`=`checkbalanceall`+'".($nodas_balance_sum+$noda_balance_noda_ip)."', `checkwallet`='".$checkbalancenodatime."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`>1;");
-                    
-                  } else {
-                    query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`=`checkbalance`+'".$balance_check[$sqltbl_arr['wallet']]."', `checkbalanceall`=`checkbalanceall`+'".$nodas_balance_sum."', `checkwallet`='".$checkbalancenodatime."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`!=1;");
-                    
-                  }
-                } else { 
-                  if(($sqltbl_arr['view']==1 || $sqltbl_arr['view']==3) && $noda_balance_noda_ip< $balance_check[$sqltbl_arr['wallet']]){
-                    query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='".$json_arr['time']."', `view`=2, `checknoda`='' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and (`view`=1 or `view`=3);");
-                    if(mysqli_affected_rows($mysqli_connect)>=1){
-                      $sqltbl_arr['checkbalance']='';
-                      $sqltbl_arr['checkbalanceall']='';
-                      $sqltbl_arr['checkwallet']='';
-                      $sqltbl_arr['view']=2;
-                      $sqltbl_arr['checknoda']='';
-                    }
-                  }
-                  if($sqltbl_arr['view']==0 || $sqltbl_arr['view']==2){
-                    if($balance_check[$sqltbl_arr['wallet']]>0.5*$nodas_balance_sum_bd)$wallet_replace=1;
-                    else $wallet_replace=0;
-                    if($wallet_replace==1 || ((int)$sqltbl_arr['checkbalanceall']+$nodas_balance_sum)>=0.9*($nodas_balance_sum_bd-($sqltbl_arr['view']==0?$noda_balance_noda_ip:0))){
-                     if($sqltbl_arr['view']==2 || ($wallet_replace==1 && $sqltbl_arr['view']==0)){
-                        query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['wallet']."', `ref1`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref1']."', `ref2`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref2']."', `ref3`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref3']."', `noda`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['noda']."', `nodause`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodause']."', `balance`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['balance']."', `height`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."', `date`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['date']."', `signpubnew`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpubnew']."', `signnew`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signnew']."', `signpub`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpub']."', `sign`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['sign']."', ".($wallet_replace==1?"`checkbalance`='', `checkbalanceall`='', `checkwallet`='', `view`=1":"`checkbalance`=`checkbalance`+'".$balance_check[$sqltbl_arr['wallet']]."', `checkbalanceall`=`checkbalanceall`+'".$nodas_balance_sum."', `checkwallet`='".$checkbalancenodatime."', `view`=0, `checknoda`=''")." WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
-                        if(mysqli_affected_rows($mysqli_connect)>=1){
-                          query_bd("SELECT `recipient`,`height`,`money`,`nodawallet`,`date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."' and `checkhistory`=1 and `sign`!= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['sign']."' LIMIT 1;");
-                          if(isset($sqltbl['recipient'])){
-                            $sqltbl_history= $sqltbl;
-                            query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
-                            if(mysqli_affected_rows($mysqli_connect)>=1){
-                              if($sqltbl_history['nodawallet']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodawallet'] || $sqltbl_history['height']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height'])query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`= `balance`-1, `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['nodawallet']."' and (`view`=1 or `view`=3);");
-                              query_bd("SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."' and `date`='".$sqltbl_history['date']."';");
-                              if(isset($sqltbl_history['wallet'])){
-                                if($sqltbl_history['money1']>0)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET  `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['ref1']."' and (`view`=1 or `view`=3);");
-                                if($sqltbl_history['money2']>0)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET  `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['ref2']."' and (`view`=1 or `view`=3);");
-                                if($sqltbl_history['money3']>0)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET  `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['ref3']."' and (`view`=1 or `view`=3);");
-                              }
-                              query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
-                            }
-                          } else {
+						if($wallet_synch_end>0){
+							$wallets_check= $wallets_bd;
+							foreach ($noda_json_arr_all_wallets as $key => $value) {
+								if(!isset($wallets_check[$key]))$wallets_check[$key]= 1;
+							}
+						} else $wallets_check= $noda_json_arr_all_wallets;
+						$query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet` IN ('".implode("','",array_keys($wallets_check))."');";
+						$result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_wallet_date_check");
+						while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
+							if(isset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']])){
+								if(isset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['wallet'])
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['wallet']==$sqltbl_arr['wallet']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref1']==$sqltbl_arr['ref1']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref2']==$sqltbl_arr['ref2']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref3']==$sqltbl_arr['ref3']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['noda']==$sqltbl_arr['noda']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodause']==$sqltbl_arr['nodause']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['balance']==$sqltbl_arr['balance']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['date']==$sqltbl_arr['date']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['balance_ref']==$sqltbl_arr['balance_ref']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['date_ref']==$sqltbl_arr['date_ref']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']==$sqltbl_arr['height']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpubnew']==$sqltbl_arr['signpubnew']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signnew']==$sqltbl_arr['signnew']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpub']==$sqltbl_arr['signpub']
+									&& $noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['sign']==$sqltbl_arr['sign']
+									){
+									if($sqltbl_arr['view']==3 && ($noda_balance_noda_ip< $balance_check[$sqltbl_arr['wallet']] || ($noda_balance_noda_ip+$balance_check[$sqltbl_arr['wallet']])>0.5*$nodas_balance_sum_bd)){
+										query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='', `view`=1 WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`=3;");
+									} else if(((int)$sqltbl_arr['checkbalance']+$balance_check[$sqltbl_arr['wallet']]+($sqltbl_arr['view']>1 && (int)$sqltbl_arr['checkbalance']==0 && (int)$sqltbl_arr['checkbalanceall']==0?$noda_balance_noda_ip:0))>0.5*($nodas_balance_sum_bd-($sqltbl_arr['view']==0?$noda_balance_noda_ip:0))){
+										query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='', `view`=1 WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
+									} else if(((int)$sqltbl_arr['checkbalanceall']+$nodas_balance_sum)>=0.9*($nodas_balance_sum_bd-($sqltbl_arr['view']==0?$noda_balance_noda_ip:0))){
+										if($sqltbl_arr['view']==0){
+											query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`=0;");
+										} else {
+											query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='".$json_arr['time']."', `view`=0, `checknoda`='' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`>1;");
+										}
+									} else if($sqltbl_arr['view']>1 && ((int)$sqltbl_arr['checkbalance']==0 && (int)$sqltbl_arr['checkbalanceall']==0)){
+										query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`=`checkbalance`+'".($balance_check[$sqltbl_arr['wallet']]+$noda_balance_noda_ip)."', `checkbalanceall`=`checkbalanceall`+'".($nodas_balance_sum+$noda_balance_noda_ip)."', `checkwallet`='".$checkbalancenodatime."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`>1;");
+									} else {
+										query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`=`checkbalance`+'".$balance_check[$sqltbl_arr['wallet']]."', `checkbalanceall`=`checkbalanceall`+'".$nodas_balance_sum."', `checkwallet`='".$checkbalancenodatime."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`!=1;");
+									}
+								} else { 
+									if(($sqltbl_arr['view']==1 || $sqltbl_arr['view']==3) && $noda_balance_noda_ip< $balance_check[$sqltbl_arr['wallet']]){
+										query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalance`='', `checkbalanceall`='', `checkwallet`='".$json_arr['time']."', `view`=2, `checknoda`='' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and (`view`=1 or `view`=3);");
+										if(mysqli_affected_rows($mysqli_connect)>=1){
+											$sqltbl_arr['checkbalance']='';
+											$sqltbl_arr['checkbalanceall']='';
+											$sqltbl_arr['checkwallet']='';
+											$sqltbl_arr['view']=2;
+											$sqltbl_arr['checknoda']='';
+										}
+									}
+									if($sqltbl_arr['view']==0 || $sqltbl_arr['view']==2){
+										if($balance_check[$sqltbl_arr['wallet']]>0.5*$nodas_balance_sum_bd)$wallet_replace=1;
+										else $wallet_replace=0;
+										if($wallet_replace==1 || ((int)$sqltbl_arr['checkbalanceall']+$nodas_balance_sum)>=0.9*($nodas_balance_sum_bd-($sqltbl_arr['view']==0?$noda_balance_noda_ip:0))){
+										 if($sqltbl_arr['view']==2 || ($wallet_replace==1 && $sqltbl_arr['view']==0)){
+												query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['wallet']."', `ref1`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref1']."', `ref2`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref2']."', `ref3`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['ref3']."', `noda`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['noda']."', `nodause`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodause']."', `balance`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['balance']."', `date`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['date']."', `balance_ref`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['balance_ref']."', `date_ref`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['date_ref']."', `height`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."', `signpubnew`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpubnew']."', `signnew`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signnew']."', `signpub`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['signpub']."', `sign`= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['sign']."', ".($wallet_replace==1?"`checkbalance`='', `checkbalanceall`='', `checkwallet`='', `view`=1":"`checkbalance`=`checkbalance`+'".$balance_check[$sqltbl_arr['wallet']]."', `checkbalanceall`=`checkbalanceall`+'".$nodas_balance_sum."', `checkwallet`='".$checkbalancenodatime."', `view`=0, `checknoda`=''")." WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
+												if(mysqli_affected_rows($mysqli_connect)>=1){
+													query_bd("SELECT `recipient`,`height`,`money`,`nodawallet`,`date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."' and `checkhistory`=1 and `sign`!= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['sign']."' LIMIT 1;");
+													if(isset($sqltbl['recipient'])){
+														$sqltbl_history= $sqltbl;
+														query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
+														if(mysqli_affected_rows($mysqli_connect)>=1){
+															if($sqltbl_history['nodawallet']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodawallet'] || $sqltbl_history['height']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height'])query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`= `balance`-1, `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['nodawallet']."' and (`view`=1 or `view`=3);");
+															query_bd("SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."' and `date`='".$sqltbl_history['date']."';");
+															if(isset($sqltbl_history['wallet'])){
+																if($sqltbl_history['money1']>0)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET  `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['ref1']."' and (`view`=1 or `view`=3);");
+																if($sqltbl_history['money2']>0)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET  `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['ref2']."' and (`view`=1 or `view`=3);");
+																if($sqltbl_history['money3']>0)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET  `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['ref3']."' and (`view`=1 or `view`=3);");
+															}
+															query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
+														}
+													} else {
 														query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`> '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
-                          }
-                        }
-                      } else {
-                        query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`=0;");
-                      }
-                    } else {
-                      query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalanceall`=`checkbalanceall`+'".$nodas_balance_sum."', `checkwallet`='".$checkbalancenodatime."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`!=1;");
-                    }
-                  } 
-                }
-                unset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']]);
-              } 
-            }
-           if(isset($noda_json_arr_all_wallets) && count($noda_json_arr_all_wallets)>0){
-              $query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet` IN ('".implode("','",array_keys($noda_json_arr_all_wallets))."');";
-              $result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_wallet_date_check_dell");
-              while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))unset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']]);
-              if(isset($noda_json_arr_all_wallets) && $noda_json_arr_all_wallets){
-                foreach($noda_json_arr_all_wallets as $key => $value){
-                  if($balance_check[$value['wallet']]>0.5*($nodas_balance_sum_bd-$noda_balance_noda_ip))$wallets_bd_add[$value['wallet']]= "'".implode("','",$value)."','','','','1'";
-                  else $wallets_bd_add[$value['wallet']]= "'".implode("','",$value)."','".$balance_check[$sqltbl_arr['wallet']]."','".$nodas_balance_sum."','".$checkbalancenodatime."','0'";
-                }
-                query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` (`wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `height`, `signpubnew`, `signnew`, `signpub`, `sign`, `checkbalance`, `checkbalanceall`, `checkwallet`, `view`) VALUES (".implode("),(",$wallets_bd_add).");");
-                if(mysqli_affected_rows($mysqli_connect)>=1){}
-                foreach ($wallets_bd_add as $key => $value) {
-                  if(isset($noda_json_arr_all_wallets[$key]) && isset($sqltbl_arr) && isset($sqltbl_arr['wallet'])){
-                    query_bd("SELECT `recipient`,`height`,`money`,`pin`,`nodawallet`,`date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$sqltbl_arr['height']."' and `checkhistory`=1 and `sign`!= '".$noda_json_arr_all_wallets[$key]['sign']."' LIMIT 1;");
-                    if(isset($sqltbl['recipient'])){
-                      $sqltbl_history= $sqltbl;
-                      query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$sqltbl_history['height']."';");
-                      if(mysqli_affected_rows($mysqli_connect)>=1){
-                        query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$sqltbl_history['height']."';");
-                      }
-                    } else {
-                      query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=0 WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`> '".$sqltbl_arr['height']."' and `checkhistory`=1;");
-                    }
-                  }
-                }
-              }
-            }
+													}
+												}
+											} else {
+												query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`=0;");
+											}
+										} else {
+											query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkbalanceall`=`checkbalanceall`+'".$nodas_balance_sum."', `checkwallet`='".$checkbalancenodatime."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `view`!=1;");
+										}
+									} 
+								}
+								unset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']]);
+							} 
+						}
+						if(isset($noda_json_arr_all_wallets) && count($noda_json_arr_all_wallets)>0){
+							$query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet` IN ('".implode("','",array_keys($noda_json_arr_all_wallets))."');";
+							$result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_wallet_date_check_dell");
+							while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))unset($noda_json_arr_all_wallets[$sqltbl_arr['wallet']]);
+							if(isset($noda_json_arr_all_wallets) && $noda_json_arr_all_wallets){
+								foreach($noda_json_arr_all_wallets as $key => $value){
+									if($balance_check[$value['wallet']]>0.5*($nodas_balance_sum_bd-$noda_balance_noda_ip))$wallets_bd_add[$value['wallet']]= "'".implode("','",$value)."','','','','1'";
+									else $wallets_bd_add[$value['wallet']]= "'".implode("','",$value)."','".$balance_check[$sqltbl_arr['wallet']]."','".$nodas_balance_sum."','".$checkbalancenodatime."','0'";
+								}
+								query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` (`wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `balance_ref`, `date_ref`, `height`, `signpubnew`, `signnew`, `signpub`, `sign`, `checkbalance`, `checkbalanceall`, `checkwallet`, `view`) VALUES (".implode("),(",$wallets_bd_add).");");
+								if(mysqli_affected_rows($mysqli_connect)>=1){}
+								foreach ($wallets_bd_add as $key => $value) {
+									if(isset($noda_json_arr_all_wallets[$key]) && isset($sqltbl_arr) && isset($sqltbl_arr['wallet'])){
+										query_bd("SELECT `recipient`,`height`,`money`,`pin`,`nodawallet`,`date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$sqltbl_arr['height']."' and `checkhistory`=1 and `sign`!= '".$noda_json_arr_all_wallets[$key]['sign']."' LIMIT 1;");
+										if(isset($sqltbl['recipient'])){
+											$sqltbl_history= $sqltbl;
+											query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$sqltbl_history['height']."';");
+											if(mysqli_affected_rows($mysqli_connect)>=1){
+												query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$sqltbl_history['height']."';");
+											}
+										} else {
+											query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=0 WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`> '".$sqltbl_arr['height']."' and `checkhistory`=1;");
+										}
+									}
+								}
+							}
+						}
           }
           if(isset($post_synchwallets['synch_wallet'])){
             if($synch_wallet==$post_synchwallets['synch_wallet'] && $nodas_balance_sum_no_synch_wallet>0 && $nodas_balance_sum>0 && $nodas_balance_sum_no_synch_wallet> 0.9*$nodas_balance_sum)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`= 1 WHERE `name`= 'synch_wallet';");
@@ -1144,6 +1167,8 @@ if($stop!=1 && $request['type']=="wallet"){
       if($wallet['balancecheck']!=0)$json_arr['balancetransactioncheck']= (string)$wallet['balancecheck'];
       $json_arr['percent_4']= (string)$wallet['percent_4'];
       $json_arr['percent_5']= (string)$wallet['percent_5'];
+			$json_arr['balance_ref']= $wallet['balance_ref'];
+			$json_arr['date_ref']= $wallet['date_ref'];
       $json_arr['height']= $wallet['height'];
       $json_arr['date']= $wallet['date'];
       if(isset($request['password'])){
@@ -1544,7 +1569,7 @@ if($stop!=1 && $request['type']=="synchwallets"){
       array_splice($wallets_temp, $limit);
       foreach($wallets_temp as $key => $value)if((int)$value==$value)$wallets[]=$value;
       if(isset($wallets)){
-        $query= "SELECT `wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `height`, `signpubnew`, `signnew`, `signpub`, `sign` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet` IN ('".implode("','",$wallets)."') and `view`>0 ORDER BY `date`,`wallet` LIMIT ".$limit.";";
+        $query= "SELECT `wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `balance_ref`, `date_ref`, `height`, `signpubnew`, `signnew`, `signpub`, `sign` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet` IN ('".implode("','",$wallets)."') and `view`>0 ORDER BY `date`,`wallet` LIMIT ".$limit.";";
         $result= mysqli_query($mysqli_connect,$query) or die("error_synchwallets_wallets_check");
         while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
           $json_arr['synchwallets'][$sqltbl_arr['wallet']]= $sqltbl_arr;
@@ -1556,7 +1581,7 @@ if($stop!=1 && $request['type']=="synchwallets"){
     if($limit>0 && isset($json_arr['synchwallets']) && count($json_arr['synchwallets'])>0) $limit= $limit-count($json_arr['synchwallets']);
     if($limit<=0)$limit=1;
     $json_arr['synchwallets']['count_synch_wallet']=0;
-    $query_wallets_synch= "SELECT `wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `height`, `signpubnew`, `signnew`, `signpub`, `sign` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`>'".$request['synch_wallet']."' ".(isset($json_arr['synchwallets']) && count($json_arr['synchwallets'])>0?"and `wallet` NOT IN ('".implode("','",array_keys($json_arr['synchwallets']))."')":'')." and `view`>0 and `date`< UNIX_TIMESTAMP()-60 ORDER BY `wallet` LIMIT ".$limit.";";
+    $query_wallets_synch= "SELECT `wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `balance_ref`, `date_ref`, `height`, `signpubnew`, `signnew`, `signpub`, `sign` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`>'".$request['synch_wallet']."' ".(isset($json_arr['synchwallets']) && count($json_arr['synchwallets'])>0?"and `wallet` NOT IN ('".implode("','",array_keys($json_arr['synchwallets']))."')":'')." and `view`>0 and `date`< UNIX_TIMESTAMP()-60 ORDER BY `wallet` LIMIT ".$limit.";";
     $result= mysqli_query($mysqli_connect,$query_wallets_synch) or die("error_synchwallets_wallets_synch");
     while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
       $json_arr['synchwallets'][$sqltbl_arr['wallet']]= $sqltbl_arr;
