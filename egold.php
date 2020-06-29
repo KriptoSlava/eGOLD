@@ -1,11 +1,11 @@
 <?php
 ini_set("memory_limit", "2048M");
-// ini_set('error_reporting', E_ALL);
+// ini_set('error_reporting', E_ALL); 
 // ini_set('display_errors', 0);
 // ini_set('log_errors','on');
 // ini_set('error_log', __DIR__ . '/egold_error.log');
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
-$version= 1.7;//версия egold.php
+$version= 1.8;//версия egold.php
 if(isset($_REQUEST['version'])){echo '{"version": "'.$version.'"}'; exit;}
 if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
@@ -594,7 +594,7 @@ if($stop!=1){
                 query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=1, `date`='".$sqltbl_arr['date']."' WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
 								query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`=`value`+1 WHERE `name`='transactionscount';");
 								if(mysqli_affected_rows($mysqli_connect)>=1){}
-              }else query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=0 WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
+              }else query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=0, `date`='".$sqltbl_arr['date']."' WHERE `wallet`= '".$sqltbl_arr['wallet']." and `nodatrue`!=0';");
               if(mysqli_affected_rows($mysqli_connect)>=1){}
             }
           }
@@ -1431,18 +1431,17 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 		timer(9);
 		wallet_check();
 		if(isset($email_domain) && $email_domain && isset($email_limit) && (int)$email_limit>0 && isset($email_delay) && (float)$email_delay>0){
-			$query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` WHERE `nodatrue`=1 and `email`!='';";
+			$query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` WHERE `nodatrue`=1 and `email`!='' ORDER BY `date` ASC;";
 			$result= mysqli_query($mysqli_connect,$query) or die("error_noty_check_user");
-			while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))$user_mail[$sqltbl_arr['wallet']]=$sqltbl_arr;
-			if(isset($user_mail)){
-				query_bd("SELECT `date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` WHERE `nodatrue`=1 and `email`!='' ORDER BY `date` ASC LIMIT 1;");
-				$query= "SELECT `wallet`,`height`,`recipient`,`money`,`nodause`,`date`,`checkemail` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `date`>".$sqltbl['date']." and `checkhistory`=1 and (`checkemail`=0 or `checkemail`=2) and `wallet` IN ('".implode("','",array_keys($user_mail))."') ORDER BY `date` ASC LIMIT ".(10*$email_limit).";";
+			while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
+				if(!isset($date_limit) || $date_limit<$sqltbl_arr['date'])$date_limit= $sqltbl_arr['date'];
+				$user_mail[$sqltbl_arr['wallet']]=$sqltbl_arr;
+			}
+			if(isset($user_mail) && isset($date_limit)){
+				$query= "SELECT `wallet`,`height`,`recipient`,`money`,`nodause`,`date`,`checkemail` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `date`>".$json_arr['time']."-7*60 and `checkhistory`=1 and `checkemail`!=3 ORDER BY `date` ASC, `wallet` ASC, `height` ASC LIMIT 10000;";
 				$result= mysqli_query($mysqli_connect,$query) or die("error_noty_check");
 				while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))$user_mail_wallet[$sqltbl_arr['wallet']."_".$sqltbl_arr['height']]= $sqltbl_arr;
-				$query= "SELECT `wallet`,`height`,`recipient`,`money`,`nodause`,`date`,`checkemail` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `date`>".$sqltbl['date']." and `checkhistory`=1 and (`checkemail`=0 or `checkemail`=1) and `recipient` IN ('".implode("','",array_keys($user_mail))."') ORDER BY `date` ASC LIMIT ".(10*$email_limit).";";
-				$result= mysqli_query($mysqli_connect,$query) or die("error_noty_check");
-				while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))$user_mail_recipient[$sqltbl_arr['recipient']."_".$sqltbl_arr['height']]= $sqltbl_arr;
-				if((isset($user_mail_wallet) && $user_mail_wallet && is_array($user_mail_wallet)) || (isset($user_mail_recipient) && $user_mail_recipient && is_array($user_mail_recipient))){
+				if(isset($user_mail_wallet) && $user_mail_wallet && is_array($user_mail_wallet)){
 					function send_mail($TO_EMAIL,$subject,$message){
 						global $email_domain,$email_delay;
 						usleep((float)$email_delay*1000000);
@@ -1460,46 +1459,27 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 					$email_limit_down= (int)$email_limit;
 					if(isset($user_mail_wallet) && $user_mail_wallet && is_array($user_mail_wallet)){
 						foreach ($user_mail_wallet as $key => $value) {
-							if(!($email_limit_up>0))break;
-							$sendmail='';
-							if($value['nodause']==$noda_ip && isset($user_mail[$value['wallet']]['email']) && $user_mail[$value['wallet']]['date']<$value['date']){
+							if(!($email_limit_up>0) && !($email_limit_down>0))break;
+							if($email_limit_up>0 && isset($user_mail[$value['wallet']]['email']) && $value['checkemail']!=3 && $value['checkemail']!=1){
 								if($user_mail[$value['wallet']]['up']>0 && $user_mail[$value['wallet']]['up']<=$value['money']){
 									$money_value= number_format($value['money'], 0, '.', ' ');
 									$subject= "-".$money_value." | ".($value['recipient']==1?'eGOLD':gold_wallet_view($value['recipient']))." < ".substr(gold_wallet_view($value['wallet']),0,6);
 									$message= "<b>-".$money_value." | <a href='http://".$noda_ip."/egold.php?type=history&history=".$value['recipient']."' target='_blank'>".($value['recipient']==1?'eGOLD':gold_wallet_view($value['recipient']))."</a> < <a href='http://".$noda_ip."/egold.php?type=history&history=".$value['wallet']."' target='_blank'>".gold_wallet_view($value['wallet'])."</a> | ".gmdate("Y-m-d H:i:s",$value['date'])."</b>";
-									if(send_mail($user_mail[$value['wallet']]['email'],$subject,$message)==1){
-										$sendmail= $value['wallet'];
-										$email_limit_up--;
-									}
-								} else $sendmail= '';
-								if($sendmail!=''){
-									usleep(0.01*1000000);
-									query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `date`= '".$value['date']."' WHERE `wallet`= '".$sendmail."';");
+									if(send_mail($user_mail[$value['wallet']]['email'],$subject,$message)==1)$email_limit_up--;
 								}
+								$value['checkemail']= ($value['checkemail']==2?3:1);
+								query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkemail`=".$value['checkemail']." WHERE `wallet`= '".$value['wallet']."' and `height`= '".$value['height']."' and `checkhistory`=1;");
 							}
-							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkemail`=".($value['checkemail']==2?3:1)." WHERE `wallet`= '".$value['wallet']."' and `height`= '".$value['height']."' and `checkhistory`=1;");
-						}
-					}
-					if(isset($user_mail_recipient) && $user_mail_recipient && is_array($user_mail_recipient)){
-						foreach ($user_mail_recipient as $key => $value) {
-							if(!($email_limit_down>0))break;
-							$sendmail='';
-							if($value['nodause']==$noda_ip && isset($user_mail[$value['recipient']]['email']) && $user_mail[$value['recipient']]['date']<$value['date']){
+							if($email_limit_down>0 && isset($user_mail[$value['recipient']]['email']) && $value['checkemail']!=3 && $value['checkemail']!=2){
 								if($user_mail[$value['recipient']]['down']>0 && $user_mail[$value['recipient']]['down']<=$value['money']){
 									$money_value= number_format($value['money'], 0, '.', ' ');
 									$subject= "+".$money_value." | ".gold_wallet_view($value['wallet'])." > ".substr(gold_wallet_view($value['recipient']),0,6);
 									$message= "<b>+".$money_value." | <a href='http://".$noda_ip."/egold.php?type=history&history=".$value['wallet']."' target='_blank'>".gold_wallet_view($value['wallet'])."</a> > <a href='http://".$noda_ip."/egold.php?type=history&history=".$value['recipient']."' target='_blank'>".gold_wallet_view($value['recipient'])."</a> | ".gmdate("Y-m-d H:i:s",$value['date'])."</b>";
-									if(send_mail($user_mail[$value['recipient']]['email'],$subject,$message)==1){
-										$sendmail= $value['recipient'];
-										$email_limit_down--;
-									}
-								} else $sendmail= '';
-								if($sendmail!=''){
-									usleep(0.01*1000000);
-									query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `date`= '".$value['date']."' WHERE `wallet`= '".$sendmail."';");
+									if(send_mail($user_mail[$value['recipient']]['email'],$subject,$message)==1)$email_limit_down--;
 								}
+								$value['checkemail']= ($value['checkemail']==1?3:2);
+								query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkemail`=".$value['checkemail']." WHERE `wallet`= '".$value['wallet']."' and `height`= '".$value['height']."' and `checkhistory`=1;");
 							}
-							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkemail`=".($value['checkemail']==1?3:2)." WHERE `wallet`= '".$value['wallet']."' and `height`= '".$value['height']."' and `checkhistory`=1;");
 						}
 					}
 				}
