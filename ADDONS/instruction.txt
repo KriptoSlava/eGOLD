@@ -1,0 +1,1 @@
+Addons are placed in the site root in a fold so that the addons’ fold would be next to the file containing node settings egold_settings.php
