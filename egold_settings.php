@@ -1,42 +1,50 @@
-<?php //v1.7
-//УСТАНОВКА НОДЫ
-//Для сайта нужен IP адрес, а также нужно создать MySQL базу данных. IP адрес и данные по базе данных нужно внести в этот файл: egold_settings.php
-//В корневой папке размещения сайта, по IP которого будем обращаться должны лежать файлы и папки: egold.php, egold_settings.php, egold_crypto
-//После размещения файлов  и папок и внесения настроек в egold_settings.php, нужно обратиться к скрипту egold.php через браузер по адресу http://[ip_адрес_ноды]/egold.php и посмотреть, что установка прошла успешна. В этом случае выдаётся сообщение в котором будет параметр install_bd со значением true.
-//Для работы ноды необходимо добавить egold.php с параметром synch в cron вида '/[путь папки с php]/php ~/[путь папки с egold.php]/egold.php synch' с периодичснотью исполнения раз в 1 минуту (версия исполнения PHP скрипта в кроне должна быть от 7.1). Можно использовать и так: http://[ip_адрес_ноды]/egold.php?type=synch (не рекомендуется)
+<?php //v1.9
+//NODE SETTING
+//Website requires IP address and establishing MySQL database. IP address and data from database should be added to the file: egold_settings.php
+//The root folder of web-hosting addressed by IP should store files and folders: egold.php, egold_settings.php, egold_crypto
+//After placing files and folders and adjusting setting to egold_settings.php, you should address egold.php script via browser using http://[ip_address_node]/egold.php check if the installation is successful. In this case you get a message with install_bd parameter marked true.
+//To run the node add egold.php with synch parameter in the form of cron '/[folder path with php]/php ~/[folder path with egold.php]/egold.php synch' at a performing interval of 1 per minute (PHP script corn version should be at least 7.1). Alternative usage: http://[ip_address_node]/egold.php?type=synch (not recommended)
+//Once the synchronization is completed, in request http://[ip_address_node]/egold.php, datelasttransaction parameter will surpass zero. Synchronization is completed when the datelasttransaction parameter value becomes equal or close to datelasttransaction parameter of synchronized nodes.
 
-$noda_ip= ""; //Адрес ноды
-$host_db = "localhost"; //Адрес сервера базы данных в большинстве случаев localhost
-$database_db = ""; //Имя базы данных
-$user_db = ""; //Имя пользователя базы данных
-$password_db = ""; //Пароль базы данных
-$prefix_db = ""; //Префикс только из английских больших и маленьких букв и цифр для защиты базы данных (по умолчанию egold). Лучше для безопасности, задать свой произвольный
+$noda_ip= ""; //Node address
+$host_db = "localhost";//Database server address in most cases localhost
+$database_db = "";//Database name
+$user_db = "";//Database user name
+$password_db = "";//Database password
+$prefix_db = "";//Prefix should consist of Latin capital and small letters for databases protection (egold by default). For added security, set an arbitrary 
 
-//Принадлежность ноды кошельку - даёт +1% к росту монет на указанном кошельке и 1 монету с каждой транзакции по ноде. Для работы ноды необходимо совершить любую операцию через данную ноду с помощью данного кошелька после его синхронизации с остальными нодами. 
-//Любая транзакция с кошелька, привязанного к ноде, произведённая в другую ноду, деактивирует ноду. Если на ноде будет меньше 100 монет, она не будет учитываться при голосовании за верность транзакции и её IP может привязать к себе другой кошелёк, также не будет происходить её мгновенная синхронизация с другими нодами. Чтобы нода находилась в рабочем состоянии, кошелёк, привязанный к ноде, должен не реже 1 раза в месяц совершать любую транзакцию со своей ноды.
-//Номера кошелька для ноды должен быть вида: G-1000-00000-0000-00000 или 100000000000000000
+//In case node is tied to a wallet it adds +1% to growth in coin amount on a certain wallet and 1 coin from each node transaction. Node activation requires making any transaction through the node via certain wallet after its synchronization with other nodes. In the process, in requesting http://[ip_address_node]/egold.php holder will be indicated with the number of the tied wallet. In a few minutes after the synchronization in requesting http://[ip_address_node]/egold.php?type=wallet&wallet=[number of related wallet] at a current node and at synchronized nodes in nodawallet parameter the IP address of the wallet’s node will be shown and the official eGOLD.html will display G+ bonus next to the balance, and the settings will demonstrate a line with IP address of the node.
+//Assessment of G+ bonus is carried out during any inbound and outbound transaction of a wallet tied to node as well as during enrolment of percentage at a wallet, and actually this is 5% assessment instead of 4%. The assessment of bonus also occurs at any transaction within a wallet’s node but at least once every 24 hours if G+balance accounts 1 or more coins as each transaction within a node brings the wallet tied to it 1 coin, and this coin immediately goes to the account of the wallet. This is done so that the assessment of percentages on a wallet’s account would not be interfered with numerous transactions on node. 
+//Any transaction sent from a wallet tied to a certain node and directed to some other node deactivates the node. If a node comprises less than 100 coins it will not be taken into account while voting for the transaction verification and its IP may be tied to another wallet, and there will be no its instant synchronization with other nodes. In order to maintain the node’s operating condition, at least one transaction a month should pass through the node, and the wallet balance should be at least 100 coins.
+
+//Number of a node’s wallet should be of the following type: G-1000-00000-0000-00000 or 100000000000000000
 $noda_wallet= "";
+//$noda_wallet= "G-1000-00000-0000-00000";//Example
 
-//Для корректной работы ноды нужно добавить от 3 доверенных нод для первичной загрузки данных. После первичной загрузки, ноды уже будут браться из базы данных. Можно добавить ещё ноды ниже построчно: $noda_trust[]= "ip_адрес_ноды";
+//Proper operation of a node requires adding at least 3 trusted nodes for initial data loads. After the initial data loads nodes will be taken from database. Nodes can also be added below line by line: $noda_trust[]= "ip_address_node";
 $noda_trust[]= "";
 $noda_trust[]= "";
 $noda_trust[]= "";
-//$noda_trust[]= "91.106.203.179";//Пример использования IPv4
+//$noda_trust[]= "91.106.203.179";//Example of using IPv4 node address
 
-//Количество дней для хранения истории транзакции и истории начисления от рефералов
+//Amount of days for keeping transaction history and history of referrals’ assessments
 $history_day= 30;
 
-//Для автоматической отправки уведомлений на электронную почту по транзакциям пользователей, использующим текущей ноду, нужно привязать к хостингу свой домен и указать его ниже, например egold.pro
+//In order to set automatic sending of notifications to emails according to transactions of users dealing with a certain node you should link your domain to hosting and specify it below, e.g. egold.pro. For proper email notification system operating, you need a domain not higher than of a second level. What is it and how to get it you may find on the Internet.
 $email_domain= "";
-//Лимит отправляемых писем за раз для входящих и исходящих транзакций равен. Если установлено 10, то для исходящих 10 писем и для входящих 10.
+//$email_domain= "egold.pro";//Example
+
+//Limit of messages being sent at once for inbound and outbound transactions. In case 10 messages are determined, it means 10 for incoming and outgoing messages. If there are too many messages at once, server may block their sending and mail services may consider them as spam.
 $email_limit= 10;
-//Задержка перед отправкой письма на электронную почту в секундах
+
+//Delay prior to sending message to email is calculated in seconds so that message gets to addressee. Otherwise, mail services or node server may block it.
 $email_delay= 0.1;
 
-//Домен вместе с http или https, по которому разрешено обращаться к ноде для информации. Например: https://www.egold.pro
-//В любом случае, для работы ноды нужен IP адрес
+//Domain which can be used for addressing node for information is indicated with http or https, and this can be done via IP. Example: https://www.egold.pro
+//In any case, node operating requires IP address
 $noda_site= "";
+//$email_domain= "https://www.egold.pro";//Example
 
-//Защита от ddos в виде блокировки ноды при превышении заданного количества подключений за последние 9 секунд
+//Ddos protection in the form of node blocking in case the given amount of connections over 9 seconds is exceeded
 $ddos_protect= 1000;
 ?>
