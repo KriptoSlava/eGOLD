@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eGOLD R1.8</title>
+  <title>eGOLD R1.11</title>
   <script>
     !function(e,t){if("function"==typeof define&&define.amd)define(["module","exports"],t);else if("undefined"!=typeof exports)t(module,exports);else{var n={exports:{}};t(n,n.exports),e.autosize=n.exports}}(this,function(e,t){"use strict";var n,o,p="function"==typeof Map?new Map:(n=[],o=[],{has:function(e){return-1<n.indexOf(e)},get:function(e){return o[n.indexOf(e)]},set:function(e,t){-1===n.indexOf(e)&&(n.push(e),o.push(t))},delete:function(e){var t=n.indexOf(e);-1<t&&(n.splice(t,1),o.splice(t,1))}}),c=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){c=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(r){if(r&&r.nodeName&&"TEXTAREA"===r.nodeName&&!p.has(r)){var e,n=null,o=null,i=null,d=function(){r.clientWidth!==o&&a()},l=function(t){window.removeEventListener("resize",d,!1),r.removeEventListener("input",a,!1),r.removeEventListener("keyup",a,!1),r.removeEventListener("autosize:destroy",l,!1),r.removeEventListener("autosize:update",a,!1),Object.keys(t).forEach(function(e){r.style[e]=t[e]}),p.delete(r)}.bind(r,{height:r.style.height,resize:r.style.resize,overflowY:r.style.overflowY,overflowX:r.style.overflowX,wordWrap:r.style.wordWrap});r.addEventListener("autosize:destroy",l,!1),"onpropertychange"in r&&"oninput"in r&&r.addEventListener("keyup",a,!1),window.addEventListener("resize",d,!1),r.addEventListener("input",a,!1),r.addEventListener("autosize:update",a,!1),r.style.overflowX="hidden",r.style.wordWrap="break-word",p.set(r,{destroy:l,update:a}),"vertical"===(e=window.getComputedStyle(r,null)).resize?r.style.resize="none":"both"===e.resize&&(r.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),a()}function s(e){var t=r.style.width;r.style.width="0px",r.offsetWidth,r.style.width=t,r.style.overflowY=e}function u(){if(0!==r.scrollHeight){var e=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&t.push({node:e.parentNode,scrollTop:e.parentNode.scrollTop}),e=e.parentNode;return t}(r),t=document.documentElement&&document.documentElement.scrollTop;r.style.height="",r.style.height=r.scrollHeight+n+"px",o=r.clientWidth,e.forEach(function(e){e.node.scrollTop=e.scrollTop}),t&&(document.documentElement.scrollTop=t)}}function a(){u();var e=Math.round(parseFloat(r.style.height)),t=window.getComputedStyle(r,null),n="content-box"===t.boxSizing?Math.round(parseFloat(t.height)):r.offsetHeight;if(n<e?"hidden"===t.overflowY&&(s("scroll"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight):"hidden"!==t.overflowY&&(s("hidden"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight),i!==n){i=n;var o=c("autosize:resized");try{r.dispatchEvent(o)}catch(e){}}}}function i(e){var t=p.get(e);t&&t.destroy()}function d(e){var t=p.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return r(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],d),e}),t.default=l,e.exports=t.default});
   <!-- Копирование в буфер обмена -->
@@ -2259,6 +2259,12 @@ WOW
   background-color: red;
   padding: 5px 0;
   margin-bottom: 50px;
+}
+#error_log a{
+	color: white;
+}
+.error_log_add{
+	margin-top:5px;
 }
 @charset "UTF-8";
 .header-login .row-info .block-money,
@@ -9872,26 +9878,26 @@ function saveTypeWallet(wallet,ip,id,password){
 				else if(typeof(json_typewallet.wallet)== "undefined" || json_typewallet.wallet.replace(/[^\d]/g, "")!=wallet)return_view= 'wallet';
 				else {
 					if(typeof(json_typewallet.time)!= "undefined" && typeof(json_typewallet.balance)!= "undefined" && typeof(json_typewallet.percent_4)!= "undefined" && typeof(json_typewallet.percent_5)!= "undefined" && typeof(json_typewallet.date)!= "undefined" && typeof(json_typewallet.ref1)!= "undefined" && typeof(json_typewallet.ref2)!= "undefined" && typeof(json_typewallet.ref3)!= "undefined" && typeof(json_typewallet.nodawallet)!= "undefined"){
-					localStorage_clean();
-					date= new Date();
-					offset= date.getTimezoneOffset();
-					localStorage.setItem('eGOLD_offset',offset);
-					localStorage.setItem('eGOLD_typewallettime_different',(time_now-parseInt(json_typewallet.time)));
-					localStorage.setItem('eGOLD_typewallettime',time_now);
-					localStorage.setItem('eGOLD_typewallet',data);
-					return_view= 1;
-					//загрузка списка транзакций
-					if($('#page-transactions').hasClass('active')){
-						setTimeout(function () {
-							page_transactions(1);
-						},1200);
-					}
-					//загрузка списка транзакций по рефералам
-					if($('#page-referral').hasClass('active')){
-						setTimeout(function () {
-							page_referral(1);
-						},1200);
-					}
+						localStorage_clean();
+						date= new Date();
+						offset= date.getTimezoneOffset();
+						localStorage.setItem('eGOLD_offset',offset);
+						localStorage.setItem('eGOLD_typewallettime_different',(time_now-parseInt(json_typewallet.time)));
+						localStorage.setItem('eGOLD_typewallettime',time_now);
+						localStorage.setItem('eGOLD_typewallet',data);
+						return_view= 1;
+						//загрузка списка транзакций
+						if($('#page-transactions').hasClass('active')){
+							setTimeout(function () {
+								page_transactions(1);
+							},1200);
+						}
+						//загрузка списка транзакций по рефералам
+						if($('#page-referral').hasClass('active')){
+							setTimeout(function () {
+								page_referral(1);
+							},1200);
+						}
 					} else return_view= 'ip';
 				}
 			},
@@ -9915,6 +9921,8 @@ function saveTypeWallet(wallet,ip,id,password){
 					if(typeof(localStorage.getItem('eGOLD_password'))!= undefined)localStorage.removeItem('eGOLD_password');
 					if(typeof(localStorage.getItem('eGOLD_contacts'))!= undefined)localStorage.removeItem('eGOLD_contacts');
 					$('.page-settings .passwordSettings,.page-settings .blockEmail input').val('');
+					$('#error_log').hide();
+					$('#error_log').html('');
 					successAllDisplay();
 				} else {
 					errorInput('#IPnodaSettings');
@@ -10072,12 +10080,46 @@ $('#saveParamSettingsValid').click(function(){
 	else errorInput('.EmailSettings');
 })
 //кнопка войти
+var version_check_true= 1,noda_ip_check;
 $('.but_reg').click(function(){
 	trueInput('#wallet');
 	trueInput('#ip');
-	check= saveTypeWallet($('#wallet').val(),$('#ip').val(),'','');
-	if(check=='wallet')errorInput('#wallet');
-	if(check=='ip')errorInput('#ip');
+	$('#error_log').hide();
+	$('#error_log').html('');
+	if(noda_ip_check!= $('#ip').val())version_check_true= 1;
+	noda_ip_check= $('#ip').val();
+	if($('.header-login').hasClass('hide') && $('#error_log').css('display')=='none'){
+		if(check_ip(noda_ip_check)){
+			$.ajax({
+				url: "http://"+noda_ip_check+"/egold.php",
+				method: 'POST',
+				timeout: 10000,
+				async:false,
+				data: {version: ''},
+				success: function success(data) {
+					json_version_data= JSON.parse(data);
+					if(json_version_data.version>parseFloat($("title").html().replace(/[^\d\.]/ig,''))){
+						$('#error_log').show();
+						if(json_version_data.MD5)$('#error_log').html("<div>Новая версия: <a href='http://"+noda_ip_check+"/eGOLD_v"+json_version_data.version+".zip' title='Обязательно проверьте MD5 после загрузки eGOLD_v"+json_version_data.version+".zip' download>eGOLD_v"+json_version_data.version+".zip</a></div><div class='error_log_add'>MD5: "+json_version_data.MD5+"</div>");
+						else $('#error_log').html("<div>Новая версия: eGOLD_v"+json_version_data.version+".zip</div>");
+						if(version_check_true==1)version_check_true= 0;
+						else version_check_true= 2;
+					} else version_check_true= 1;
+				},
+				error: function error(data){version_check_true= -1;errorInput('#ip');}
+			});
+		} else errorInput('#ip');
+	}
+	if(version_check_true>0){
+		check= saveTypeWallet($('#wallet').val(),noda_ip_check,'','');
+		if(check=='wallet')errorInput('#wallet');
+		else if(check=='ip')errorInput('#ip');
+		else {
+			$('#error_log').hide();
+			$('#error_log').html('');
+			noda_ip_check= '';
+		}
+	} else version_check_true= 2;
 })
  //проверка даты и времени на корректность и перевод в строку UTC
 function validate_date(value){
@@ -10525,6 +10567,14 @@ $('.saveContact').click(function() {
 function page_settings(){
 	trueInput('.page-settings .passwordSettings');
 	trueInput('#IPnodaSettings');
+	var json_typewallet= json_typewallet_arr();
+	if(typeof(json_typewallet)!= "undefined" && typeof(json_typewallet.noda)!= "undefined" && json_typewallet.noda){
+		if(json_typewallet.noda!=$('#IPnodaSettings').val()){
+			$('#error_log').hide();
+			$('#error_log').html('');
+		}
+		$('#IPnodaSettings').val(json_typewallet.noda);
+	}
 	$('.passwordSettings').val(typeof(localStorage.getItem('eGOLD_password'))!= undefined && localStorage.getItem('eGOLD_password')?localStorage.getItem('eGOLD_password'):'');
 }
 //получение высоты кошелька
@@ -10565,6 +10615,8 @@ function hide_send(){
 function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 	//проверка достаточности баланса
 	trueInput('.amout_to');
+	$('#error_log').hide();
+	$('#error_log').html('');
 	if(!(parseInt($('.money p').html().replace(/[^\d\.]/g, ""))>=parseInt(money)+2)){
 		hide_send();
 		errorAllDisplay();
@@ -10642,7 +10694,14 @@ function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 			});
 			localStorage.setItem('eGOLD_typewallettime',(parseInt(Date.now()/1000)-59));//для обновления данных по кошельку
 			if(typeof(json_send)== "undefined" || !json_send || typeof(json_send.noda)== "undefined"){errorAllDisplay();return false;}
-			else if(json_send.noda=='not_activated'){errorAllDisplay();menuPages('page-settings');errorInput('#IPnodaSettings');return false;}
+			else if(json_send.noda=='not_activated'){
+				errorAllDisplay();
+				menuPages('page-settings');
+				errorInput('#IPnodaSettings');
+				$('#error_log').html("<div>Нода не активирована</div><div class='error_log_add'>Активированные ноды: <a href='http://"+nodause+"/egold.php?type=nodas' title='Рабочие ноды в базе данных текущей ноды' target='_blank'>http://"+nodause+"/egold.php?type=nodas</a></div>");
+				$('#error_log').show();
+				return false;
+			}
 			else if(typeof(json_send.signpubnew_check)!= "undefined" && json_send.signpubnew_check=='false'){errorAllDisplay();return 'signnew';}
 			else if(signpubreg && typeof(json_send.recipient)!= "undefined" && json_send.recipient=='false'){errorAllDisplay();return 'signreg';}
 			else if(typeof(json_send.send)== "undefined" || json_send.send!='true'){return 'secret';return false;}
@@ -10692,6 +10751,7 @@ $(".but_send").click(function () {
 		amout_to= parseInt($('.amout_to').val())+2;
 		if(money>=3)$('.amout_to').val(money-2);
 	}else {
+		$('#btnSendMoney').attr('title','Отправить '+number_format(parseInt($('.amout_to').val()), 0, '.', ' ')+' eGOLD');
 		$('.block-input').removeClass("show").removeClass("anim-show").addClass("hide");
 		$('.secret-key').removeClass("hide").addClass("show").addClass("anim-show");
 	}
