@@ -1,12 +1,17 @@
 <?php
 ini_set("memory_limit", "2048M");
-ini_set('error_reporting', E_ALL); 
-ini_set('display_errors', 0);
-ini_set('log_errors','on');
-ini_set('error_log', __DIR__ . '/egold_error.log');
+// ini_set('error_reporting', E_ALL); 
+// ini_set('display_errors', 0);
+// ini_set('log_errors','on');
+// ini_set('error_log', __DIR__ . '/egold_error.log');
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
-$version= 1.9;//версия egold.php
-if(isset($_REQUEST['version'])){echo '{"version": "'.$version.'"}'; exit;}
+$version= '1.11';//version egold.php
+if(isset($_REQUEST['version'])){
+	$archive= 'eGOLD_v'.$version.'.zip';
+	if(file_exists($archive)) $md5= ', "MD5": "'.strtoupper(hash_file('md5', $archive)).'"';
+	echo '{"version": "'.$version.'"'.(isset($md5)?', "download": "'.(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']?'https':'http').'://'.$_SERVER['SERVER_NAME'].'/'.$archive.'"'.$md5:'').'}'; 
+	exit;
+}
 if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
 if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}'; exit;}
@@ -18,7 +23,7 @@ if(isset($_SESSION['timer_start']) && $timer_start-$_SESSION['timer_start']<0.00
 $_SESSION['timer_start']=$timer_start;
 usleep(mt_rand(0.001*1000000,0.1*1000000));
 include 'egold_settings.php';
-$limit_synch= 1000;
+$limit_synch= 250;
 $percent_4= 1.0000000154321;
 $percent_5= 1.0000000192901;
 function convert_ipv6($ip){
@@ -245,6 +250,10 @@ COMMIT;";
   mysqli_close($mysqli_connect);
   exit;
 }
+query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='version'");
+if(!isset($sqltbl['value']) || ((float)$sqltbl['value']>=1.7 && (float)$sqltbl['value']<(float)$version)){
+	query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='".$version."', `name`='version';");
+}
 query_bd("SELECT count(*) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `date`>=UNIX_TIMESTAMP()-9 LIMIT 1;");
 if(isset($sqltbl['count']) && $sqltbl['count']>$ddos_protect){echo '{"noda":"timeout"}';mysqli_close($mysqli_connect);exit;}
 $type['type']="a-z";
@@ -349,17 +358,7 @@ if(isset($sqltbl['now']) && $sqltbl['now']){
   if(isset($json_arr['countconnect']))query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `countconnect`=`countconnect`+1 WHERE `host`= '".$host_ip."';");
   else query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `host`= '".$host_ip."', `countconnect`=1, `date`= UNIX_TIMESTAMP();");
   $json_arr['noda']=$noda_ip;
-  function gold_wallet_view($wallet){
-    $wallet_temp='';
-    for($i=0,$j=4;$i<18;$i++){
-      if($i==$j){
-        $wallet_temp.= "-".$wallet[$i];
-        if($i%9==0) $j=$i+4;
-        else $j=$i+5;
-      } else $wallet_temp.=$wallet[$i];
-    }
-    return "G-".$wallet_temp;
-  }
+  function gold_wallet_view($wallet){return 'G-'.substr($wallet,0,4).'-'.substr($wallet,4,5).'-'.substr($wallet,9,4).'-'.substr($wallet,13,5);}
   function timer($time){
     global $json_arr;
     $timer= microtime(true)-$json_arr['timer_start'];
@@ -548,7 +547,7 @@ if($stop!=1){
 							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".$nodawallet['percent_5']."'+1, `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$sqltbl_arr['nodawallet']."';");
 							unset($nodawallet);
 						} else {
-							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+1 WHERE `wallet`='".$sqltbl_arr['nodawallet']."';");
+							query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+1 ".(mt_rand(1,41)==1?', `view`=IF(`view`=1,3,`view`)':'')." WHERE `wallet`='".$sqltbl_arr['nodawallet']."';");
 						}
             query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=1 WHERE `date`= '".$sqltbl_arr['date']."' and `hash`= '".$sqltbl_arr['hash']."' and `wallet`= '".$sqltbl_arr['wallet']."';");
             if(mysqli_affected_rows($mysqli_connect)>=1){
@@ -561,12 +560,9 @@ if($stop!=1){
             }
           }
           query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `checkhistory`=2 WHERE `checkhistory`=0 and `wallet`= '".$sqltbl_arr['wallet']."' and `height`<= '".$sqltbl_arr['height']."';");
-          if(mysqli_affected_rows($mysqli_connect)>=1){}
-          query_bd("SELECT COUNT(*) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `checkhistory`=2 and `wallet`=".$sqltbl_arr['wallet']." and `height`=".$sqltbl_arr['height'].";");
-          if(isset($sqltbl['count'])){
-            query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`-2*".$sqltbl['count'].", `balance_ref`=`balance`, `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['wallet']."' and `view`>0;");
-            if(mysqli_affected_rows($mysqli_connect)>=1){}
-          }
+          if(mysqli_affected_rows($mysqli_connect)>=1 && $wallet['view']==1){
+						query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$wallet['wallet']."' and `view`>0;");
+					}
           $sqltbl_arr['checkhistory']= 1;
         }
       } else if($sqltbl_arr['checkhistory']==0){
@@ -768,7 +764,7 @@ if($stop!=1){
   function transaction_check($host_ip,$post,$wallet,$request){
     global $json_arr,$sqltbl,$mysqli_connect,$limit_synch;
     $wallet_temp= $wallet;
-    $json= connect_noda_multi($host_ip,'',$post,3);
+    $json= connect_noda_multi($host_ip,'',$post,5);
     if(is_array($json)){
       foreach ($json as $key1 => $value1){
         if(is_array($value1)){
@@ -893,7 +889,7 @@ if($stop!=1){
         $post_synchwallets['wallets']= json_encode(array_keys($wallets_bd));
         $wallet_synch_end=count($wallets_bd);
       } else $wallet_synch_end=0;
-      $noda_json_arr= connect_noda_multi($nodas,'',$post_synchwallets,3);
+      $noda_json_arr= connect_noda_multi($nodas,'',$post_synchwallets,5);
       if(is_array($noda_json_arr) && count($noda_json_arr)>=3){
         $nodas_balance_sum_no_synch_wallet=0;
         foreach($noda_json_arr as $key => $value){
@@ -1068,7 +1064,7 @@ if($stop!=1){
 														$sqltbl_history= $sqltbl;
 														query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `height`>= '".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."';");
 														if(mysqli_affected_rows($mysqli_connect)>=1){
-															if($sqltbl_history['nodawallet']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodawallet'] || $sqltbl_history['height']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height'])query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`= `balance`-1, `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['nodawallet']."' and (`view`=1 or `view`=3);");
+															if($sqltbl_history['nodawallet']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['nodawallet'] || $sqltbl_history['height']!=$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height'])query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checkwallet`='".$json_arr['time']."', `view`=IF(`view`=1,3,`view`) WHERE `wallet`= '".$sqltbl_history['nodawallet']."' and (`view`=1 or `view`=3);");
 															query_bd("SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`='".$sqltbl_arr['wallet']."' and `height`='".$noda_json_arr_all_wallets[$sqltbl_arr['wallet']]['height']."' and `date`='".$sqltbl_history['date']."';");
 															if(isset($sqltbl_history['wallet'])){
 																if($sqltbl_history['money1']>0)query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET  `checkwallet`='".$json_arr['time']."', `view`=2 WHERE `wallet`= '".$sqltbl_history['ref1']."' and (`view`=1 or `view`=3);");
@@ -1494,7 +1490,7 @@ if($stop!=1 && $request['type']=="send" && isset($request['wallet']) && isset($r
            $post_noda['height']= $request['height'];
            $post_noda['all']= 2;
            $post_noda['limit']= 1;
-           $json_noda= connect_noda_multi($host_ip,'',$post_noda,3);
+           $json_noda= connect_noda_multi($host_ip,'',$post_noda,5);
             if(!isset($json_noda[$host_ip][0]) || !isset($json_noda[$host_ip][0]['wallet']) || $json_noda[$host_ip][0]['wallet']!=$request['wallet'] || !isset($json_noda[$host_ip][0]['recipient']) || $json_noda[$host_ip][0]['recipient']!=$request['recipient'] || !isset($json_noda[$host_ip][0]['money']) || $json_noda[$host_ip][0]['money']!=$request['money'] || !isset($json_noda[$host_ip][0]['pin']) || $json_noda[$host_ip][0]['pin']!=$request['pin'] || !isset($json_noda[$host_ip][0]['height']) || $json_noda[$host_ip][0]['height']!=$request['height'] || !isset($json_noda[$host_ip][0]['nodawallet']) || $json_noda[$host_ip][0]['nodawallet']!=$request['nodawallet'] || !isset($json_noda[$host_ip][0]['nodause']) || $json_noda[$host_ip][0]['nodause']!=$request['nodause'] || !isset($json_noda[$host_ip][0]['date']) || $json_noda[$host_ip][0]['date']!=$request['date'] || !isset($json_noda[$host_ip][0]['signpub']) || $json_noda[$host_ip][0]['signpub']!=$request['signpub'] || !isset($json_noda[$host_ip][0]['sign']) || $json_noda[$host_ip][0]['sign']!=$request['sign']){
               echo '{"noda_check": "false"}';mysqli_close($mysqli_connect);exit;
             }
