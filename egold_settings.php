@@ -22,6 +22,7 @@ $noda_wallet= "";
 //$noda_wallet= "G-1000-00000-0000-00000";//Example
 
 //Proper operation of a node requires adding at least 3 trusted nodes for initial data loads. After the initial data loads nodes will be taken from database. Nodes can also be added below line by line: $noda_trust[]= "ip_address_node";
+//The list of nodes can be obtained from any trusted node request in the address bar of the browser: http://[ip_address_or_site_trusted_node]/egold.php?type=nodas из параметра "noda"
 $noda_trust[]= "";
 $noda_trust[]= "";
 $noda_trust[]= "";

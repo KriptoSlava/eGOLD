@@ -5,7 +5,7 @@ ini_set("memory_limit", "2048M");
 // ini_set('log_errors','on');
 // ini_set('error_log', __DIR__ . '/egold_error.log');
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
-$version= '1.11';//version egold.php
+$version= '1.12';//version egold.php
 if(isset($_REQUEST['version'])){
 	$archive= 'eGOLD_v'.$version.'.zip';
 	if(file_exists($archive)) $md5= ', "MD5": "'.strtoupper(hash_file('md5', $archive)).'"';
@@ -52,16 +52,17 @@ function convert_ipv6($ip){
   }
   return $ip;
 }
-if(!isset($noda_ip) || !$noda_ip){echo '{"error": "noda_ip in egold settings.php"}';exit;}
+if(!isset($noda_ip) || !$noda_ip){echo '{"error": "noda_ip in egold_settings.php"}';exit;}
 $noda_ip=convert_ipv6(preg_replace("/[^0-9a-z.:]/",'',$noda_ip));
-if(!isset($noda_wallet) || !$noda_wallet){echo '{"error": "noda_wallet in egold settings.php"}';exit;}
+if(!isset($noda_wallet) || !$noda_wallet){echo '{"error": "noda_wallet in egold_settings.php"}';exit;}
 $noda_wallet=preg_replace("/[^0-9]/",'',$noda_wallet);
-if(!isset($host_db) || !$host_db){echo '{"error": "host_db in egold settings.php"}';exit;}
-if(!isset($database_db) || !$database_db){echo '{"error": "database_db in egold settings.php"}';exit;}
-if(!isset($user_db) || !$user_db){echo '{"error": "user_db in egold settings.php"}';exit;}
-if(!isset($password_db) || !$password_db){echo '{"error": "password_db in egold settings.php"}';exit;}
+if(!isset($host_db) || !$host_db){echo '{"error": "host_db in egold_settings.php"}';exit;}
+if(!isset($database_db) || !$database_db){echo '{"error": "database_db in egold_settings.php"}';exit;}
+if(!isset($user_db) || !$user_db){echo '{"error": "user_db in egold_settings.php"}';exit;}
+if(!isset($password_db) || !$password_db){echo '{"error": "password_db in egold_settings.php"}';exit;}
 if(!isset($prefix_db) || !$prefix_db)$prefix_db='egold';
-if(!isset($noda_trust) || count($noda_trust)<3){echo '{"error": "noda_trust minimum 3 nodas in egold settings.php"}';exit;}
+if(isset($noda_trust))foreach($noda_trust as $key=> $val)if(!$val || (!filter_var($val, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && !filter_var($val, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)))unset($noda_trust[$key]);
+if(!isset($noda_trust) || count($noda_trust)<3){echo '{"error": "noda_trust minimum 3 nodas in egold_settings.php"}';exit;}
 if(($key=array_search($noda_ip,$noda_trust)) !== FALSE){array_splice($noda_trust, $key, 1);}
 $stop=0; 
 if(isset($argv[1]) || $_SERVER['SERVER_NAME']=='127.0.0.1' || $_SERVER['SERVER_NAME']=='localhost')$host_ip=$noda_ip;
@@ -172,9 +173,9 @@ CREATE TABLE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` (
   `nodause` varchar(40) NOT NULL DEFAULT '',
   `balance` bigint(20) NOT NULL DEFAULT '0',
   `date` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
-	`balance_ref` bigint(20) NOT NULL DEFAULT '0',
-	`date_ref` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
-	`percent_ref` bigint(20) NOT NULL DEFAULT '0',
+  `balance_ref` bigint(20) NOT NULL DEFAULT '0',
+  `date_ref` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
+  `percent_ref` bigint(20) NOT NULL DEFAULT '0',
   `height` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   `signpubnew` varchar(514) NOT NULL DEFAULT '',
   `signnew` varchar(1440) NOT NULL DEFAULT '',
@@ -453,15 +454,11 @@ if($stop!=1){
       $urls[]= $url;
     }
     if(isset($urls) && count($urls)>=1){
-      $cookie_file = 'egold_crypto/egold_cookie.txt';
-      $file = __DIR__.'/'.$cookie_file;
       $multi= curl_multi_init();
       $channels= array();
       $json_get_arr= array();
       foreach ($urls as $url){
         $ch= curl_init();
-        curl_setopt($ch, CURLOPT_COOKIEJAR, realpath($cookie_file));
-        curl_setopt($ch, CURLOPT_COOKIEFILE, realpath($cookie_file));
         curl_setopt($ch, CURLOPT_URL, "http://".(filter_var($url, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)?"[".$url."]":$url).'/egold.php'.$path);
         curl_setopt($ch, CURLOPT_HEADER, false);
         if($post) {
@@ -471,7 +468,6 @@ if($stop!=1){
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, $timer*1000);
         curl_setopt($ch, CURLOPT_IPRESOLVE, (filter_var($noda_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)?CURL_IPRESOLVE_V6:CURL_IPRESOLVE_V4));
-        curl_setopt($ch, CURLOPT_INTERFACE, $noda_ip);
         curl_multi_add_handle($multi, $ch);
         $channels[$url]= $ch;
       }
