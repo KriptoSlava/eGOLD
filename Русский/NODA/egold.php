@@ -5,17 +5,17 @@ ini_set("memory_limit", "2048M");
 // ini_set('log_errors','on');
 // ini_set('error_log', __DIR__ . '/egold_error.log');
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
-$version= '1.12';//версия egold.php
+$version= '1.14';//версия egold.php
+if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
+if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
+if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}'; exit;}
+if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}'; exit;}
 if(isset($_REQUEST['version'])){
 	$archive= 'eGOLD_v'.$version.'.zip';
 	if(file_exists($archive)) $md5= ', "MD5": "'.strtoupper(hash_file('md5', $archive)).'"';
 	echo '{"version": "'.$version.'"'.(isset($md5)?', "download": "'.(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']?'https':'http').'://'.$_SERVER['SERVER_NAME'].'/'.$archive.'"'.$md5:'').'}'; 
 	exit;
 }
-if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
-if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
-if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}'; exit;}
-if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}'; exit;}
 $json_arr['timer_start']=microtime(true);
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 $timer_start= $json_arr['timer_start'];
