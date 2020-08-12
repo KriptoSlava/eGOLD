@@ -5,7 +5,7 @@ ini_set("memory_limit", "2048M");
 // ini_set('log_errors','on');
 // ini_set('error_log', __DIR__ . '/egold_error.log');
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
-$version= '1.14';//версия egold.php
+$version= '1.15';//версия egold.php
 if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
 if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}'; exit;}
