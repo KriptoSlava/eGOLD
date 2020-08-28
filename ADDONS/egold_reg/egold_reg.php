@@ -1,4 +1,6 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+
 //For error display uncomment the below:
 // ini_set('error_reporting', E_ALL);
 // ini_set('display_errors', 1);
@@ -37,9 +39,8 @@ function query_bd($query){
 }
 
 function send_mail($TO_EMAIL,$subject,$message){
-	global $email_domain;
-	$fromUserName = $email_domain;
-	$fromUserEmail= "robot@".$email_domain;
+	$fromUserName = $GLOBALS['email_domain'];
+	$fromUserEmail= "robot@".$GLOBALS['email_domain'];
 	$ReplyToEmail = $fromUserEmail;
 	$subject = "=?utf-8?b?" . base64_encode($subject) . "?=";
 	$from = "=?utf-8?B?" . base64_encode($fromUserName) . "?= <" . $fromUserEmail . ">";
@@ -47,7 +48,7 @@ function send_mail($TO_EMAIL,$subject,$message){
 	$headers .= "\r\nContent-Type: text/html; charset=\"utf-8\"";
 	
 	$message.= "\r\n<br/>---
-\r\n<br/><i>* Message sent from the technical address: robot@".$email_domain.". Technical address only for automatic message sending!</i>
+\r\n<br/><i>* Message sent from the technical address: robot@".$GLOBALS['email_domain'].". Technical address only for automatic message sending!</i>
 \r\n<br/>";
 
 	if(@mail($TO_EMAIL, $subject, $message, $headers)) return 1;
@@ -64,7 +65,7 @@ if(isset($request['email']) && isset($request['pin'])){
 			$id= $sqltbl['id'];
 			include  __DIR__ .'/../egold_settings.php';
 			$mysqli_connect_egold = mysqli_connect($host_db,$user_db,$password_db,$database_db) or die("error_egold_db");
-			$query= "SELECT `height` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`= '".$wallet_egold_number."' LIMIT 1;";
+			$query= "SELECT `height` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `wallet`= '".$GLOBALS['wallet_egold_number']."' LIMIT 1;";
 			$result= mysqli_query($mysqli_connect_egold,$query) or die("error_egold_wallets");
 			$sqltbl = mysqli_fetch_assoc($result);
 			if(isset($sqltbl['height'])){
@@ -87,9 +88,9 @@ if(isset($request['email']) && isset($request['pin'])){
 				function sha_dec($str){return substr(bchexdec(gen_sha3($str,19)),0,19);}//Generation of hash consisting of 19 numbers
 				$str_s_reg='30'.sha_dec($falcon_p_reg);
 				$falcon_s_reg= Falcon\sign($falcon_k_reg, $str_s_reg);
-				$str_s= $wallet_egold_number.'00'.'3'.'0'.$wallet_height.$noda_ip.$falcon_p_reg.$falcon_s_reg;
-				$falcon_s= Falcon\sign($wallet_egold_key, $str_s);
-				$falcon_p= Falcon\createPublicKey($wallet_egold_key);
+				$str_s= $GLOBALS['wallet_egold_number'].'00'.'3'.'0'.$wallet_height.$noda_ip.$falcon_p_reg.$falcon_s_reg;
+				$falcon_s= Falcon\sign($GLOBALS['wallet_egold_key'], $str_s);
+				$falcon_p= Falcon\createPublicKey($GLOBALS['wallet_egold_key']);
 				
 				function egold_send($params){
 					global $noda_ip;
@@ -108,7 +109,7 @@ if(isset($request['email']) && isset($request['pin'])){
 				if($falcon_s){
 					$params = array(
 						'type' => 'send',
-						'wallet' => $wallet_egold_number,
+						'wallet' => $GLOBALS['wallet_egold_number'],
 						'recipient' => '00',
 						'money' => '3',
 						'pin' => '0',
@@ -129,8 +130,8 @@ if(isset($request['email']) && isset($request['pin'])){
 					$message= "Wallet number: <b>".$wallet_new."</b>
 				\r\n<br/>Private key: ".$falcon_k_reg."
 				\r\n<br/>
-				\r\n<br/>Download the wallet via the link: ".$wallet_url."
-				\r\n<br/>MD5 signature for archive verification: ".$MD5."
+				\r\n<br/>Download the wallet via the link: ".$GLOBALS['wallet_url']."
+				\r\n<br/>MD5 signature for archive verification: ".$GLOBALS['MD5']."
 				\r\n<br/><i>MD5 archive signature <b>MANDATORY</b> should be reconciled with other official sources! Find on the Internet how to check MD5.</i>
 				\r\n<br/>Archive password: MD5
 				\r\n<br/>IP node address: ".$noda_ip."
@@ -139,7 +140,7 @@ if(isset($request['email']) && isset($request['pin'])){
 				\r\n<br/>
 				\r\n<br/><b>1.</b> Private key should be changed and only then it will be possible to accept transactions on the wallet and use it for other purposes.
 				\r\n<br/><b>2.</b> Wallet is considered to be unsafe till the moment of changing private key.
-				\r\n<br/><b>3.</b> In any case, ".$email_domain." only register a new wallet, and users bear full responsibility for its utilization.													
+				\r\n<br/><b>3.</b> In any case, ".$GLOBALS['email_domain']." only register a new wallet, and users bear full responsibility for its utilization.													
 				\r\n<br/>
 				\r\n<br/>Date and time: ".date("H:i:s d.m.Y")."
 				\r\n<br/>";
@@ -160,12 +161,12 @@ if(isset($request['email']) && isset($request['pin'])){
 		}
 	}
 } else if(isset($request['email'])){
-	if($period_pin>0)query_bd("SELECT * FROM `".$GLOBALS['database_db_reg']."`.`eGOLDreg` WHERE (`email`='".$request['email']."' or `ip`='".$GLOBALS['host_ip']."') and `wallet`='' ORDER by `date` DESC LIMIT 1;");
-	if(isset($sqltbl['date']) && time()-strtotime($sqltbl['date'])< $period_pin){
+	if($GLOBALS['period_pin']>0)query_bd("SELECT * FROM `".$GLOBALS['database_db_reg']."`.`eGOLDreg` WHERE (`email`='".$request['email']."' or `ip`='".$GLOBALS['host_ip']."') and `wallet`='' ORDER by `date` DESC LIMIT 1;");
+	if(isset($sqltbl['date']) && time()-strtotime($sqltbl['date'])< $GLOBALS['period_pin']){
 		echo '{"error": "limit_pin"}'; //Interval for requesting pin code for one email and one IP is limited
 	} else {
 		query_bd("SELECT * FROM `".$GLOBALS['database_db_reg']."`.`eGOLDreg` WHERE `email`='".$request['email']."' and `wallet`!='' ORDER by `id` DESC LIMIT 1;");
-		if(!isset($sqltbl['date']) || (isset($sqltbl['date']) && ($wallets_more_one==2 || ($wallets_more_one==1 && time()-strtotime($sqltbl['date'])>$period_reg*60*60)))){
+		if(!isset($sqltbl['date']) || (isset($sqltbl['date']) && ($GLOBALS['wallets_more_one']==2 || ($GLOBALS['wallets_more_one']==1 && time()-strtotime($sqltbl['date'])>$GLOBALS['period_reg']*60*60)))){
 			//Random pin code generator
 			$chars_pin="1234567890";
 			//Number of symbols in pin code
@@ -196,7 +197,7 @@ if(isset($request['email']) && isset($request['pin'])){
 			}
 			
 			//Database clearing
-			query_bd("DELETE FROM `".$GLOBALS['database_db_reg']."`.`eGOLDreg` WHERE `wallet`='' and `date` < DATE_ADD(NOW(), INTERVAL -".$period_clean." DAY);");
+			query_bd("DELETE FROM `".$GLOBALS['database_db_reg']."`.`eGOLDreg` WHERE `wallet`='' and `date` < DATE_ADD(NOW(), INTERVAL -".$GLOBALS['period_clean']." DAY);");
 		} else {
 			echo '{"error": "limit_reg"}'; //Number of registrations for one email is limited 
 		}
