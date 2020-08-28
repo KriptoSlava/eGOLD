@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eGOLD R1.15</title>
+  <title>eGOLD R1.16</title>
   <script>
     !function(e,t){if("function"==typeof define&&define.amd)define(["module","exports"],t);else if("undefined"!=typeof exports)t(module,exports);else{var n={exports:{}};t(n,n.exports),e.autosize=n.exports}}(this,function(e,t){"use strict";var n,o,p="function"==typeof Map?new Map:(n=[],o=[],{has:function(e){return-1<n.indexOf(e)},get:function(e){return o[n.indexOf(e)]},set:function(e,t){-1===n.indexOf(e)&&(n.push(e),o.push(t))},delete:function(e){var t=n.indexOf(e);-1<t&&(n.splice(t,1),o.splice(t,1))}}),c=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){c=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(r){if(r&&r.nodeName&&"TEXTAREA"===r.nodeName&&!p.has(r)){var e,n=null,o=null,i=null,d=function(){r.clientWidth!==o&&a()},l=function(t){window.removeEventListener("resize",d,!1),r.removeEventListener("input",a,!1),r.removeEventListener("keyup",a,!1),r.removeEventListener("autosize:destroy",l,!1),r.removeEventListener("autosize:update",a,!1),Object.keys(t).forEach(function(e){r.style[e]=t[e]}),p.delete(r)}.bind(r,{height:r.style.height,resize:r.style.resize,overflowY:r.style.overflowY,overflowX:r.style.overflowX,wordWrap:r.style.wordWrap});r.addEventListener("autosize:destroy",l,!1),"onpropertychange"in r&&"oninput"in r&&r.addEventListener("keyup",a,!1),window.addEventListener("resize",d,!1),r.addEventListener("input",a,!1),r.addEventListener("autosize:update",a,!1),r.style.overflowX="hidden",r.style.wordWrap="break-word",p.set(r,{destroy:l,update:a}),"vertical"===(e=window.getComputedStyle(r,null)).resize?r.style.resize="none":"both"===e.resize&&(r.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),a()}function s(e){var t=r.style.width;r.style.width="0px",r.offsetWidth,r.style.width=t,r.style.overflowY=e}function u(){if(0!==r.scrollHeight){var e=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&t.push({node:e.parentNode,scrollTop:e.parentNode.scrollTop}),e=e.parentNode;return t}(r),t=document.documentElement&&document.documentElement.scrollTop;r.style.height="",r.style.height=r.scrollHeight+n+"px",o=r.clientWidth,e.forEach(function(e){e.node.scrollTop=e.scrollTop}),t&&(document.documentElement.scrollTop=t)}}function a(){u();var e=Math.round(parseFloat(r.style.height)),t=window.getComputedStyle(r,null),n="content-box"===t.boxSizing?Math.round(parseFloat(t.height)):r.offsetHeight;if(n<e?"hidden"===t.overflowY&&(s("scroll"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight):"hidden"!==t.overflowY&&(s("hidden"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight),i!==n){i=n;var o=c("autosize:resized");try{r.dispatchEvent(o)}catch(e){}}}}function i(e){var t=p.get(e);t&&t.destroy()}function d(e){var t=p.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return r(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],d),e}),t.default=l,e.exports=t.default});
   <!-- Копирование в буфер обмена -->
@@ -5434,11 +5434,6 @@ input {
     width: 100%
   }
 }
-@media screen and (max-width:550px) {
-  .header-login .row-management .block-sending input {
-    font-size: 18px
-  }
-}
 .header-login .row-management .block-sending button {
   width: 104px;
   height: 50px;
@@ -5513,13 +5508,7 @@ input {
 }
 @media screen and (max-width:768px) {
   .header-login .row-management .block-sending .block-input .custom-input:first-child input {
-    font-size: 18px;
     min-width: 200px;
-  }
-}
-@media screen and (max-width:650px) {
-  .header-login .row-management .block-sending .block-input .custom-input:first-child input {
-    font-size: 14px
   }
 }
 .header-login .row-management .block-sending .block-input .custom-input:nth-child(2) {
@@ -5533,11 +5522,6 @@ input {
 .header-login .row-management .block-sending .block-input .custom-input:nth-child(2) input {
   max-width: 160px;
   width: 100%
-}
-@media screen and (max-width:768px) {
-  .header-login .row-management .block-sending .block-input .custom-input:nth-child(2) input {
-    font-size: 14px
-  }
 }
 @media screen and (max-width:600px) {
   .header-login .row-management .block-sending .block-input .custom-input:nth-child(2) input {
@@ -5610,11 +5594,6 @@ input {
     width: 100%
   }
 }
-@media screen and (max-width:1280px) and (max-width:600px) {
-  .header-login .row-management .block-sending .secret-key .custom-input input {
-    font-size: 12px
-  }
-}
 .header-login .row-management .block-sending .secret-key button {
   width: 104px;
   margin-right: 20px;
@@ -5655,6 +5634,21 @@ input {
   padding-right: 20px;
   font-size: 20px;
   color: #7b7b7b
+}
+@media screen and (max-width:768px) {
+  .custom-input input {
+    font-size: 18px;
+  }
+}
+@media screen and (max-width:599px) {
+  .custom-input input {
+    font-size: 16px;
+  }
+}
+@media screen and (max-width:374px) {
+  .custom-input input {
+    font-size: 14px;
+  }
 }
 #password-input-text {
   margin-left: 0px !important;
@@ -6496,21 +6490,13 @@ body {
   .page-referral .block-list,
   .page-transactions .block-list {
     width: 100%;
-    font-size: 10px
   }
 }
 @media screen and (max-width:550px) {
   .page-referral .block-list,
   .page-transactions .block-list {
     width: 100%;
-    font-size: 6px
-  }
-}
-@media screen and (max-width:350px) {
-  .page-referral .block-list,
-  .page-transactions .block-list {
-    font-size: 5px
-  }
+   }
 }
 .page-referral .row,
 .page-transactions .row {
@@ -6610,10 +6596,27 @@ body {
 .page-referral .row .pin p,
 .page-transactions .row .amount p,
 .page-transactions .row .pin p {
-  font-weight: 800;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden
+}
+@media screen and (max-width:900px) {
+	.page-referral .row .date p, 
+	.page-transactions .row .date p, 
+	.page-referral .row .amount p,
+	.page-referral .row .pin p,
+	.page-transactions .row .amount p,
+	.page-transactions .row .pin p {
+		font-size: 17px;
+	}
+}
+@media screen and (min-width:901px) {
+	.page-referral .row .amount p,
+	.page-referral .row .pin p,
+	.page-transactions .row .amount p,
+	.page-transactions .row .pin p {
+		font-weight: 800;
+	}
 }
 .page-referral .row .status,
 .page-transactions .row .status {
@@ -6705,12 +6708,21 @@ body {
   .page-referral .row .status,
   .page-transactions .row .status {
     max-width: 25px;
-    min-width: 25px;
+    min-width: 10px;
+    width: auto;
+  }
+  .page-referral .row .status {
+    height: 18px;
+    width: auto;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .page-referral .row .status svg,
   .page-transactions .row .status svg {
     width: 15px;
-    height: 12px
+    height: 18px
   }
 }
 @media screen and (max-width:650px) {
@@ -6844,11 +6856,6 @@ body {
   margin-bottom: 5px;
   color: #7b7b7b;
 }
-@media screen and (max-width:790px) {
-  .page-contact .block-list .row {
-    width: 100%
-  }
-}
 .page-contact .block-list .row:hover .name-wallet,
 .page-contact .block-list .row:hover .wallet {
   background-color: #e7af27 !important
@@ -6882,25 +6889,24 @@ body {
   cursor: pointer;
   width: 90px;
 }
+.page-contact .block-list .row .wallet {
+  border-radius: 20px 0 0 20px;
+  padding-left: 20px;
+  margin-right: 1px;
+}
+.page-contact .block-list .row .name-wallet {
+  border-radius: 0 20px 20px 0;
+  padding-right: 20px;
+  margin-left: 1px;
+}
 @media screen and (max-width:790px) {
-  .page-contact .block-list .row .name-wallet button svg,
+  .page-contact .block-list .row .name-wallet button svg {
+    width: 50px;
+    height: 27px
+  }
   .page-contact .block-list .row .wallet button svg {
     width: 30px;
-    height: 23px
-  }
-}
-@media screen and (max-width:600px) {
-  .page-contact .block-list .row .name-wallet button svg,
-  .page-contact .block-list .row .wallet button svg {
-    width: 24px;
-    height: 23px
-  }
-}
-@media screen and (max-width:400px) {
-  .page-contact .block-list .row .name-wallet button svg,
-  .page-contact .block-list .row .wallet button svg {
-    width: 16px;
-    height: 23px
+    height: 27px
   }
 }
 .page-contact .block-list .row .name-wallet input,
@@ -6921,46 +6927,21 @@ body {
     font-size: 18px
   }
 }
-@media screen and (max-width:750px) {
-  .page-contact .block-list .row .name-wallet input,
-  .page-contact .block-list .row .wallet input {
-    font-size: 14px
-  }
-}
-@media screen and (max-width:650px) {
-  .page-contact .block-list .row .name-wallet input,
-  .page-contact .block-list .row .wallet input {
-    font-size: 12px;
-    padding: 0 15px
-  }
-}
 @media screen and (max-width:500px) {
   .page-contact .block-list .row .name-wallet input,
   .page-contact .block-list .row .wallet input {
-    font-size: 8px;
-    padding: 0 10px
+    font-size: 17px;
   }
 }
-@media screen and (max-width:380px) {
+@media screen and (max-width:374px) {
   .page-contact .block-list .row .name-wallet input,
   .page-contact .block-list .row .wallet input {
-    font-size: 8px;
-    padding: 0 5px
+    font-size: 12px;
   }
 }
 .page-contact .block-list .row .name-wallet input::placeholder,
 .page-contact .block-list .row .wallet input::placeholder {
   color: #c1c1c1
-}
-.page-contact .block-list .row .wallet {
-  border-radius: 20px 0 0 20px;
-  padding-left: 20px;
-  margin-right: 1px;
-}
-@media screen and (max-width:650px) {
-  .page-contact .block-list .row .wallet {
-    padding-left: 10px
-  }
 }
 .page-contact .block-list .row .wallet svg {
   width: 30px;
@@ -6975,16 +6956,6 @@ body {
   width: 100% !important;
 	height: 100% !important;
 	padding: 0 10px;
-}
-.page-contact .block-list .row .name-wallet {
-  border-radius: 0 20px 20px 0;
-  padding-right: 20px;
-  margin-left: 1px;
-}
-@media screen and (max-width:650px) {
-  .page-contact .block-list .row .name-wallet {
-    padding-right: 10px
-  }
 }
 .page-contact .block-list .row .name-wallet svg {
   width: 60px;
@@ -7005,6 +6976,52 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column-reverse
+  }
+}
+.page-contact .block-list .row .name-wallet button:hover svg, .page-contact .block-list .row .wallet button:hover svg {
+    fill: #fff !important;
+}
+@media screen and (max-width:800px) {
+  .page-contact .block-list .row:hover {
+    background-color: #e7af27 !important;
+  }
+  .page-contact .block-list .row {
+    flex-direction: column;
+    height: auto;
+    background: #f1f1f1;
+    border-radius: 25px;
+    overflow: hidden;
+    padding: 8px;
+    position: relative;
+  }
+  .page-contact .block-list .row .name-wallet, .page-contact .block-list .row .wallet {
+    width: 100%;
+  }
+  .page-contact .block-list .row .wallet {
+    margin-bottom: 8px;
+  }
+  .page-contact .block-list .row .wallet, .page-contact .block-list .row .name-wallet {
+    border-radius: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-right: 0px;
+    margin-left: 0px;
+  }
+  .page-contact .block-list .row .name-wallet button, .page-contact .block-list .row .wallet button {
+    position: absolute;
+    width: auto;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .page-contact .block-list .row .name-wallet button {
+    right: 8px;
+  }
+  .page-contact .block-list .row .wallet button {
+    left: 8px;
+  }
+  .page-contact .block-list .row .name-wallet input,
+  .page-contact .block-list .row .wallet input {
+    padding: 0 60px;
   }
 }
 * {
@@ -7188,21 +7205,10 @@ body {
 .page-settings .blockEmail .custom-input svg.custom-style {
   width: 41px !important;
 }
-@media screen and (max-width:500px) {
-  .page-settings .password-not-valid .custom-input.nodaInput input,
-  .page-settings .password-valid .custom-input.nodaInput input {
-    font-size: 18px
-  }
-}
 .page-settings .password-not-valid .custom-input input,
 .page-settings .password-valid .custom-input input {
   width: 100%;
   text-align: left;
-}
-@media screen and (max-width:500px) {
-  .page-settings .password-not-valid .custom-input input {
-    font-size: 14px;
-  }
 }
 .page-settings .password-valid .custom-input.inputwithrightbutton input {
   max-width: 275px;
@@ -7226,10 +7232,6 @@ body {
 #saveNode {
   transition: 1s;
   transform: scale(1);
-}
-.page-settings .password-not-valid .notifications .custom-input:first-child input,
-.page-settings .password-valid .notifications .custom-input:first-child input {
-  font-size: 25px
 }
 .page-settings .password-not-valid .notifications .custom-input:nth-child(2) input,
 .page-settings .password-valid .notifications .custom-input:nth-child(2) input {
@@ -7501,8 +7503,135 @@ button::-moz-focus-inner {
 div[contenteditable='true']:before {
   content: "\feff ";
 }
+@media (max-width:900px) {
+  .page-referral .row, .page-transactions .row {
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    background-color: #f1f1f17b;
+    border-radius: 50px;
+    overflow: hidden;
+    padding: 8px;
+  }
+  .page-transactions .row .date {
+    max-width: initial;
+  }
+  .page-referral .row:hover, .page-transactions .row:hover {
+    background-color: #e7af27;
+  }
+  .page-referral .row .status svg {
+    width: 28px;
+    height: 26px;
+    margin-top: -1px;
+  }
+  .page-referral .row .amount, .page-referral .row .date, .page-referral .row .pin, .page-referral .row .status, .page-referral .row .wallet, .page-transactions .row .amount, .page-transactions .row .date, .page-transactions .row .pin, .page-transactions .row .status, .page-transactions .row .wallet {
+    background-color: transparent;
+  }
+  .page-referral .row .amount {
+    max-width: 100% !important;
+    width: 100%;
+    order: 5;
+    margin-right: 0;
+  }
+  .page-transactions .row .amount p, .page-referral .row .amount p {
+    font-weight: initial;
+  }
+  .page-transactions .row .amount {
+    order: 5;
+    max-width: 45% !important;
+    min-width: auto !important;
+    width: auto;
+    margin-right: 0;
+  }
+  .page-transactions .row .date, .page-referral .row .date  {
+    order: 1;
+    max-width: 180px;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    margin-right: 8px;
+    overflow: visible;
+  }
+  .page-transactions .row .date  p, .page-referral .row .date p {
+    margin: 0;
+  }
+  .page-transactions .row .pin {
+    order: 4;
+    max-width: 45% !important;
+    min-width: auto !important;
+    width: auto;
+  }
+  .page-transactions .row .status, .page-referral .row .status {
+    order: 2;
+    padding: 0;
+  }
+  .page-transactions .row .wallet, .page-referral .row .wallet {
+    order: 3;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 7px;
+    margin-bottom: 7px;
+    margin-right: 0;
+  }
+}
+@media (min-width:901px) {
+  .small_coin, .small_pin {
+    display: none;
+  }
+}
+.btn-percent {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  max-height: 30px;
+  min-height: 30px;
+  overflow: hidden;
+  border-radius: 25px;
+  background-color: #e7af27;
+  cursor: pointer;
+  padding: 0 16px;
+  margin-right: auto;
+  margin-left: 8px;
+}
+.btn-percent:disabled .amount {
+  color: rgb(193, 193, 193);
+}
+.btn-percent .referrals {
+  width: 15px;
+  height: 15px;
+  fill: #facf68;
+  transition: all .2s ease;
+}
+.btn-percent .amount { 
+  white-space: nowrap;
+  margin: 0 14px;
+  color: #facf68;
+  transition: all .2s ease;
+}
+.btn-percent .send {
+  width: 25px;
+  height: 25px;
+  fill: #facf68;
+  transition: all .2s ease;
+}
+.btn-percent:hover .referrals, .btn-percent:hover .send, .btn-percent:hover .amount {
+  fill: #fff;
+  color: #fff;
+}
+@media (max-width:1280px) {
+  .btn-percent {
+    margin-bottom: 15px;
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
 .mr-0 {
   margin-right: 0px;
+}
+.mr-8 {
+  margin-right: 8px;
 }
 .opacity-0 {
   opacity: 0;
@@ -7742,6 +7871,26 @@ div[contenteditable='true']:before {
 }
 .liner_gradient_2 {
   stop-opacity: 1; stop-color: #f5c86e;
+}
+.small_coin {
+  width: 18px;
+  height: 18px;
+  shape-rendering:geometricPrecision;
+  text-rendering:geometricPrecision; 
+  image-rendering:optimizeQuality; 
+  fill-rule:evenodd; 
+  clip-rule:evenodd;
+  fill: #BEBEBE;
+}
+.small_pin {
+  width: 18px;
+  height: 18px;
+  fill: #BEBEBE;
+  shape-rendering:geometricPrecision;
+  text-rendering:geometricPrecision;
+  image-rendering:optimizeQuality;
+  fill-rule:evenodd;
+  clip-rule:evenodd;
 }
 </style>
 <link rel="shortcut icon" href="data:image/png;base64,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">
@@ -7999,6 +8148,15 @@ div[contenteditable='true']:before {
 				<div class="gmt">
 					<span>GMT 0</span>
 				</div>
+        <button class="btn-percent" title="Зачислить реферальные начисления на баланс можно любой исходящей транзакцией">
+          <svg class="referrals">
+            <use xlink:href="#icon_referrals" />
+          </svg>
+          <p class="amount">+ 0 G</p>
+          <svg class="send">
+            <use xlink:href="#send_icon_only" />
+          </svg>
+        </button>
 				<div class="footer-referral-control">
 					<div class="amount-rows">
 						<p><span class="from"></span> <span class="delimetor opacity-0""> - </span><span class="to"></span></p>
@@ -8804,6 +8962,20 @@ c5.06-5.064,7.852-11.824,7.852-19.028c0-7.204-2.792-13.96-7.852-19.028L300.188,2
 				d="M69.96 186.92l-27.48 0 0 48.49c0,2.93 -1.04,5.43 -3.12,7.51 -2.08,2.08 -4.58,3.12 -7.5,3.12l-21.25 0c-2.92,0 -5.42,-1.04 -7.5,-3.12 -2.08,-2.08 -3.12,-4.58 -3.12,-7.51l0 -140.39c0,-2.93 1,-5.43 3,-7.51 2,-2.08 4.46,-3.12 7.39,-3.12l93.06 0c17.24,0 31.36,4.62 42.37,13.85 11.01,9.24 16.51,21.71 16.51,37.41 0,21.86 -14.16,35.56 -42.49,41.1 4.46,1.69 8.62,4.54 12.47,8.54 3.85,4 8.24,9.85 13.16,17.55l20.55 32.56c1.85,3.08 2.39,5.62 1.62,7.62 -0.77,2 -2.62,3 -5.54,3l-27.02 0c-2.93,0 -6.08,-1.04 -9.47,-3.12 -3.39,-2.08 -6.01,-4.58 -7.85,-7.51l-19.17 -30.02c-7.85,-12.32 -17.39,-18.47 -28.63,-18.47zm20.55 -70.66l-48.03 0 0 38.79 48.03 0c7.7,0 14.51,-1.54 20.44,-4.62 5.93,-3.08 8.89,-8 8.89,-14.78 0,-6.77 -2.96,-11.7 -8.89,-14.78 -5.93,-3.08 -12.74,-4.62 -20.44,-4.62zm166.49 -0.92l-8.31 0c-14.47,0 -24.01,4.62 -28.63,13.85 -3.38,7.08 -8.47,10.62 -15.24,10.62l-13.39 0c-1.39,0 -2.85,-0.27 -4.39,-0.81 -1.54,-0.54 -3.12,-1.85 -4.73,-3.92 -1.61,-2.08 -2.42,-4.66 -2.42,-7.74 0,-8.62 3.27,-16.36 9.82,-23.21 6.54,-6.85 14.7,-12.01 24.47,-15.47 9.78,-3.46 19.97,-5.2 30.6,-5.2l15.47 0c45.26,0 67.89,16.47 67.89,49.42 0,13.7 -5.16,24.48 -15.47,32.33 11.85,7.39 17.78,18.24 17.78,32.56 0,17.4 -5.54,29.94 -16.63,37.64 -11.08,7.7 -27.32,11.55 -48.72,11.55l-24.01 0c-16.78,0 -31.79,-4.16 -45.03,-12.47 -13.24,-8.31 -19.86,-19.17 -19.86,-32.56 0,-4.46 1.31,-7.66 3.92,-9.58 2.62,-1.93 5.16,-2.89 7.62,-2.89l13.39 0c6.93,0 12.31,4.16 16.16,12.47 4.16,8.77 13.39,13.16 27.71,13.16l16.16 0c9.24,0 16.01,-1.31 20.32,-3.93 4.31,-2.62 6.47,-7.08 6.47,-13.39 0,-6.31 -2.16,-10.78 -6.47,-13.39 -4.31,-2.62 -11.08,-3.92 -20.32,-3.92l-20.32 0c-2.92,0 -5.42,-1.04 -7.5,-3.12 -2.08,-2.08 -3.12,-4.58 -3.12,-7.51l0 -9.24c0,-2.77 1,-5.23 3,-7.39 2,-2.16 4.39,-3.23 7.16,-3.23l16.63 0c10.01,0 17.28,-1.31 21.82,-3.93 4.54,-2.62 6.81,-7.08 6.81,-13.39 0,-6.31 -2.27,-10.78 -6.81,-13.39 -4.54,-2.62 -11.81,-3.93 -21.82,-3.93z"
 			/>
 		</symbol>
+    <symbol id="small_coin" version="1.1" viewBox="0 0 233.69 233.68">
+      <g id="Слой_x0020_1">
+        <metadata id="CorelCorpID_0Corel-Layer"/>
+        <path class="fil0" d="M116.84 0c64.53,0 116.84,52.31 116.84,116.84 0,64.53 -52.31,116.84 -116.84,116.84 -64.53,0 -116.84,-52.31 -116.84,-116.84 0,-64.53 52.31,-116.84 116.84,-116.84zm0 21.11c52.87,0 95.73,42.86 95.73,95.73 0,52.87 -42.86,95.73 -95.73,95.73 -52.87,0 -95.73,-42.86 -95.73,-95.73 0,-52.87 42.86,-95.73 95.73,-95.73zm-64.06 96.02c0,-20.11 5.01,-34.93 15.04,-44.51 10.03,-9.58 25.07,-14.38 45.15,-14.38l18.09 0c11.94,0 22.71,2.85 32.3,8.56 9.61,5.71 14.4,12.82 14.4,21.36 0,3.16 -0.94,5.4 -2.83,6.76 -1.91,1.36 -3.74,2.05 -5.54,2.05l-9.64 0c-4.65,0 -8.31,-2.52 -10.94,-7.56 -2.88,-5.48 -9.75,-8.23 -20.61,-8.23l-14.43 0c-11.86,0 -19.86,2.55 -24.1,7.65 -4.21,5.1 -6.32,14.52 -6.32,28.31 0,13.49 1.88,22.82 5.68,28.03 3.8,5.21 10.55,7.81 20.3,7.81l16.62 0c8.75,0 15.01,-1.63 18.7,-4.9 3.71,-3.27 5.62,-7.95 5.73,-14.04l-18.34 0c-2.1,0 -3.91,-0.75 -5.4,-2.27 -1.5,-1.5 -2.24,-3.32 -2.24,-5.48l0 -6.43c0,-2.16 0.75,-3.99 2.24,-5.48 1.5,-1.52 3.3,-2.27 5.4,-2.27l40.72 0c2.13,0 3.93,0.75 5.4,2.24 1.5,1.47 2.24,3.27 2.24,5.4l0 9c0,15.21 -4.54,26.87 -13.63,34.99 -9.09,8.12 -22.44,12.19 -40.03,12.19l-18.25 0c-17.95,0 -31.74,-4.85 -41.33,-14.52 -9.61,-9.67 -14.4,-24.43 -14.4,-44.26zm64.06 -102.53c56.46,0 102.24,45.77 102.24,102.24 0,56.46 -45.77,102.24 -102.24,102.24 -56.47,0 -102.24,-45.77 -102.24,-102.24 0,-56.46 45.77,-102.24 102.24,-102.24z"/>
+      </g>
+    </symbol>
+    <symbol id="small_pin" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1"
+      viewBox="0 0 210.45 210.45"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+      <g id="Слой_x0020_1">
+        <metadata id="CorelCorpID_0Corel-Layer"/>
+        <path d="M105.23 0c58.11,0 105.23,47.11 105.23,105.23 0,58.11 -47.11,105.23 -105.23,105.23 -58.11,0 -105.23,-47.11 -105.23,-105.23 0,-58.11 47.11,-105.23 105.23,-105.23zm0 19.01c47.61,0 86.21,38.6 86.21,86.21 0,47.61 -38.6,86.21 -86.21,86.21 -47.61,0 -86.21,-38.6 -86.21,-86.21 0,-47.61 38.6,-86.21 86.21,-86.21zm-71.18 119.88l0 -67.33 21.8 0c8.26,0 13.64,0.33 16.14,1 3.86,1.02 7.08,3.21 9.69,6.6 2.6,3.39 3.9,7.76 3.9,13.12 0,4.14 -0.75,7.6 -2.24,10.42 -1.5,2.82 -3.4,5.03 -5.71,6.65 -2.3,1.6 -4.65,2.66 -7.04,3.18 -3.24,0.64 -7.93,0.97 -14.07,0.97l-8.84 0 0 25.39 -13.64 0zm13.64 -55.95l0 19.18 7.41 0c5.34,0 8.9,-0.36 10.7,-1.07 1.8,-0.71 3.21,-1.8 4.23,-3.32 1.02,-1.5 1.54,-3.24 1.54,-5.25 0,-2.46 -0.72,-4.48 -2.15,-6.08 -1.44,-1.6 -3.24,-2.6 -5.45,-3.01 -1.61,-0.3 -4.86,-0.45 -9.75,-0.45l-6.54 0zm48.62 55.95l0 -67.33 13.64 0 0 67.33 -13.64 0zm26.6 0l0 -67.33 13.2 0 27.71 45.12 0 -45.12 12.6 0 0 67.33 -13.62 0 -27.29 -44.26 0 44.26 -12.6 0zm-17.67 -125.74c50.85,0 92.07,41.22 92.07,92.07 0,50.85 -41.22,92.07 -92.07,92.07 -50.85,0 -92.07,-41.22 -92.07,-92.07 0,-50.85 41.22,-92.07 92.07,-92.07z"/>
+      </g>
+    </symbol>
 		<!-- end wrapper svg -->
 	</svg>
 </div>
@@ -9209,15 +9381,17 @@ function button_touch(this_var){
 		this_var.css('background-color', '#f1f1f1');
 		this_var.css("transform", "none");
 		this_var.find('svg').css("fill", "#c1c1c1");
+    this_var.find('.amount').css("color", "#c1c1c1");
 	}
 	setTimeout(function () {
 		if(!this_var.hasClass('but_reg')){
 			this_var.css('background-color', '');
 			this_var.css("transform", "");
 			this_var.find('svg').attr('style',"");
+      this_var.find('.amount').css("color", "");
 		}
 		this_var.prop("disabled",false);
-	},2000)
+	},3500)
 }
 $("button:not(#main_wallet_copy,#page-qr-code,#logut-site,.addContact,#page-key-change)").click(function(event){
 	var this_var = $(this);
@@ -9754,6 +9928,16 @@ function errorInput(id){
 	};
 	demoStart();
 }
+//подсветка поля input зелёным
+function nowInput(id){
+	$(id).css("-webkit-animation", "none");
+	$(id).css("-moz-animation", "none");
+	$(id).css("-ms-animation", "none");
+	$(id).css("animation", "none");
+	$(id).css("animation-name", "blinker");
+	$(id).css("animation-iteration-count", "infinite");
+	$(id).css("animation-duration", "4s");
+}
 //убираем подсветку инпута
 function trueInput(id){
 	$(id)[0].removeAttribute('style');
@@ -9769,7 +9953,7 @@ function successAllDisplay(){
 		$('.GCheck').css("display", 'none');
 		$('.GCheck').css("z-index", '-1');
 		$('.scretch .icon-hend, .scretch .icon-hend2').css("z-index", '2');
-	}, 2000)
+	}, 3500)
 }
 //крестик на весь экран о неудаче
 function errorAllDisplay(){
@@ -9782,7 +9966,7 @@ function errorAllDisplay(){
 		$('.GCheckFalse').css("display", 'none');
 		$('.GCheckFalse').css("z-index", '-1');
 		$('.scretch .icon-hend, .scretch .icon-hend2').css("z-index", '2');
-	}, 2000)
+	}, 3500)
 }
 //функция входа
 function login(){
@@ -10230,7 +10414,7 @@ function page_transactions(interval){
 								}
 								if(!wallet_to_arr_name)wallet_to_arr_name=wallet_to_arr;
 								var p= $('.page-transactions .block-list')[0].innerHTML;
-								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='pin' style='color: "+st+";'><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount' style='color: "+st+";'><p >+ "+number_format(parseInt(json_transactions[i].money), 0, '.', ' ')+"</p></div><div class='status rotate-down'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
+								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='pin' style='color: "+st+";'><svg class='icon small_pin mr-8'><use xlink:href='#small_pin'></use></svg><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount' style='color: "+st+";'><svg class='icon small_coin mr-8'><use xlink:href='#small_coin'></use></svg><p>+ "+number_format(parseInt(json_transactions[i].money), 0, '.', ' ')+"</p></div><div class='status rotate-down'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
 							}else{
 								json_transactions[i].recipient= json_transactions[i].recipient.replace(/[^\d]/ig,'');
 								wallet_to_arr= (json_transactions[i].recipient == '1') ? 'eGOLD' : 'G-'+json_transactions[i].recipient.substr(0,4)+'-'+json_transactions[i].recipient.substr(4,5)+'-'+json_transactions[i].recipient.substr(9,4)+'-'+json_transactions[i].recipient.substr(13,5);
@@ -10243,17 +10427,17 @@ function page_transactions(interval){
 								}
 								if(!wallet_to_arr_name)wallet_to_arr_name=wallet_to_arr;
 								var p= $('.page-transactions .block-list')[0].innerHTML;
-								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='pin' style='color: "+st+";'><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount pay_money' style='color: "+st+";'><p >- "+number_format(parseInt(json_transactions[i].money)+2, 0, '.', ' ')+"</p></div><div class='status rotate-up'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
+								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='pin' style='color: "+st+";'><svg class='icon small_pin mr-8'><use xlink:href='#small_pin'></use></svg><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount pay_money' style='color: "+st+";'><svg class='icon small_coin mr-8'><use xlink:href='#small_coin'></use></svg><p>- "+number_format(parseInt(json_transactions[i].money)+2, 0, '.', ' ')+"</p></div><div class='status rotate-up'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
 							}
 						}
 						$('.page-transactions .amount-rows')[0].innerText = json_transactions.length == undefined ? 0 : json_transactions.length-1;
-						$('.page-transactions .pin').click(function(target) {
+						$('.page-transactions .pin p').click(function(target) {
 							pin= target.currentTarget.innerText.trim();
 							pin= (pin!='-' && pin!=0?pin:'');
 							$('.page-transactions .PIN').val(pin);
 							if($('.header-login .row-management .block-sending .secret-key').css('display')!='none')$('.pin_to').val(pin);
 						})
-						$('.page-transactions .dateO').click(function(target) {
+						$('.page-transactions .dateO p').click(function(target) {
 							$('.page-transactions .dateSort1').val(target.currentTarget.innerText.trim())
 						})
 						$('.page-transactions .wallet p').click(function(target) {
@@ -10261,9 +10445,9 @@ function page_transactions(interval){
 							wallet_to= $(this).attr('wallet');
 							$('.wallet_to').val((wallet_to=='eGOLD'?'G-1___-_____-____-_____':wallet_to))
 						})
-						$('.page-transactions .amount').click(function(target) {
+						$('.page-transactions .amount p').click(function(target) {
 							hide_send();
-							$('.amout_to').val(parseInt(target.currentTarget.innerText.trim().replace(/[^\d]/ig,''))-($(this).hasClass('pay_money')?2:0));
+							$('.amout_to').val(parseInt(target.currentTarget.innerText.trim().replace(/[^\d]/ig,''))-($(this).parents().hasClass('pay_money')?2:0));
 						})
 						//дата транзакций в соответствии с часовым поясом
 						date_now= new Date();
@@ -10310,7 +10494,6 @@ $('.save_filter_referral').click(function(){
 })
 //переход на страницу зачислений от рефералов 
 function page_referral(interval){
-	//проверка на таймаут
 	if(timeout_now_stop())return false;
 	var offset= parseInt(typeof(localStorage.getItem('eGOLD_offset'))!= "undefined" && localStorage.getItem('eGOLD_offset')?localStorage.getItem('eGOLD_offset'):0);
 	if(!interval){
@@ -10342,6 +10525,12 @@ function page_referral(interval){
 				timeout_now_test(json_referral);
 				if(typeof(json_referral)== "undefined" || !json_referral || (typeof(json_referral.referrals)== "undefined" && typeof(json_referral[0])== "undefined")){}
 				else{
+					//кнопка зачисления поступления от рефералов
+					if(typeof(json_typewallet.percent_ref)!= "undefined" && json_typewallet.percent_ref>0 && typeof(json_typewallet.balancetransactioncheck)== "undefined" && !json_typewallet.balancetransactioncheck){
+						$(".btn-percent .amount").html('+ '+number_format(parseInt(json_typewallet.percent_ref), 0, '.', ' ')+' G');
+						$(".btn-percent").css('display','flex');
+						$(".btn-percent").show();
+					} else $(".btn-percent").hide();
 					$('.page-referral .block-list').empty();
 					//количество страниц
 					if(!(json_referral.length>0))$('.page-referral .amount-rows')[0].innerText= 0;
@@ -10357,12 +10546,12 @@ function page_referral(interval){
 						page_referral(1);
 						return false;
 					} else {
-						wallet_to_arr_name= '';
 						json_contacts= '';
 						if(typeof(localStorage.getItem('eGOLD_password'))!= undefined && typeof(localStorage.getItem('eGOLD_contacts'))!= undefined && localStorage.getItem('eGOLD_password') && localStorage.getItem('eGOLD_contacts')){
 							json_contacts= JSON.parse(localStorage.getItem('eGOLD_contacts'));
 						}
 						for(var i=0;i<(json_referral.length-1) && typeof(json_referral[i].date)!= "undefined";i++) {
+							wallet_to_arr_name= '';
 							new_transaction = 'black';
 							st= (json_referral[i].date> json_typewallet.date_ref) ? '#e7af27': '#7b7b7b';
 							date_to= parseInt(json_referral[i].date)-offset*60;
@@ -10397,10 +10586,10 @@ function page_referral(interval){
 							}
 							if(!wallet_to_arr_name)wallet_to_arr_name=wallet_to_arr;
 							var p= $('.page-referral .block-list')[0].innerHTML;
-							$('.page-referral .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='amount' style='color: "+st+";'><p >+ "+number_format(money, 0, '.', ' ')+"</p></div><div class='status'><svg class='icon'><use xlink:href='"+icon+"'></use></svg></div></div>";
+							$('.page-referral .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='amount' style='color: "+st+";'><svg class='icon small_coin mr-8'><use xlink:href='#small_coin'></use></svg><p>+ "+number_format(money, 0, '.', ' ')+"</p></div><div class='status'><svg class='icon'><use xlink:href='"+icon+"'></use></svg></div></div>";
 						}
 						$('.page-referral .amount-rows')[0].innerText = json_referral.length == undefined ? 0 : json_referral.length-1; 
-						$('.page-referral .dateO').click(function(target) {
+						$('.page-referral .dateO p').click(function(target) {
 							$('.page-referral .dateSort2').val(target.currentTarget.innerText.trim())
 						})
 						$('.page-referral .wallet p').click(function(target) {
@@ -10408,7 +10597,7 @@ function page_referral(interval){
 							wallet_to= $(this).attr('wallet');
 							$('.wallet_to').val((wallet_to=='eGOLD'?'G-1___-_____-____-_____':wallet_to))
 						})
-						$('.page-referral .amount').click(function(target) {
+						$('.page-referral .amount p').click(function(target) {
 							hide_send();
 							$('.amout_to').val(parseInt(target.currentTarget.innerText.trim().replace(/[^\d]/ig,'')))
 						})
@@ -10757,7 +10946,7 @@ $(".but_send").click(function () {
 		amout_to= parseInt($('.amout_to').val())+2;
 		if(money>=3)$('.amout_to').val(money-2);
 	}else {
-		$('#btnSendMoney').attr('title','Отправить '+number_format(parseInt($('.amout_to').val()), 0, '.', ' ')+' eGOLD');
+		$('#btnSendMoney').attr('title','Отправить '+number_format(parseInt($('.amout_to').val()), 0, '.', ' ')+' eGOLD на кошелёк '+($('.wallet_to').val().replace(/[^\d]/g, "")!=1?$('.wallet_to').val():'G-1'));
 		$('.block-input').removeClass("show").removeClass("anim-show").addClass("hide");
 		$('.secret-key').removeClass("hide").addClass("show").addClass("anim-show");
 	}
@@ -10838,6 +11027,26 @@ $('.send-key-change').click(function(){
 			$('.page-key-change').find('.result-chang').removeClass('hide').addClass('anim-show');
 		}
 	},1000);
+})
+//кнопка зачисления реферальных поступлений
+$('.btn-percent').click(function(){
+	trueInput('.money p');
+	trueInput('.wallet_to');
+	trueInput('.amout_to');
+	trueInput('.secret_to');
+	trueInput('.pin_to');
+	$('.wallet_to').val('G-1___-_____-____-_____');
+	$('.amout_to').val('1');
+	$('.secret_to').val('');
+  $('.pin_to').val('');
+	$('.secret-key').removeClass("show").removeClass("anim-show").addClass("hide");
+  $('.block-input').removeClass("hide").addClass("show").addClass("anim-show");
+	nowInput('.wallet_to');
+	nowInput('.amout_to');
+	$("body,html").animate({
+		scrollTop:0
+	}, 1000);
+	return false;
 })
 //отправляем транзакцию для создания нового кошелька
 $('.send-register-wallet').click(function(){
