@@ -1,27 +1,34 @@
 <?php
+$version= '1.16';//version egold.php
+$error_log= 0;//if =1, errors will be written to a file: egold_error.log
 ini_set("memory_limit", "2048M");
-// ini_set('error_reporting', E_ALL); 
-// ini_set('display_errors', 0);
-// ini_set('log_errors','on');
-// ini_set('error_log', __DIR__ . '/egold_error.log');
+if($error_log==1){
+	mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+	error_reporting(E_ALL);
+	ini_set('error_reporting', E_ALL); 
+	ini_set('display_errors', 0);
+	ini_set('log_errors','on');
+	ini_set('error_log', __DIR__ . '/egold_error.log');
+}
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
-$version= '1.15';//version egold.php
-if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}'; exit;}
-if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}'; exit;}
-if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}'; exit;}
-if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}'; exit;}
+function exit_now(){if(isset($mysqli_connect))mysqli_close($mysqli_connect);exit;}
+if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}';exit_now();}
+if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}';exit_now();}
+if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}';exit_now();}
+if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}';exit_now();}
 if(isset($_REQUEST['version'])){
 	$archive= 'eGOLD_v'.$version.'.zip';
 	if(file_exists($archive)) $md5= ', "MD5": "'.strtoupper(hash_file('md5', $archive)).'"';
 	echo '{"version": "'.$version.'"'.(isset($md5)?', "download": "'.(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']?'https':'http').'://'.$_SERVER['SERVER_NAME'].'/'.$archive.'"'.$md5:'').'}'; 
-	exit;
+	exit_now();
 }
 $json_arr['timer_start']=microtime(true);
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 $timer_start= $json_arr['timer_start'];
 if(isset($_SESSION['timer_start']) && $timer_start-$_SESSION['timer_start']<0.001)usleep(0.001*1000000);
 $_SESSION['timer_start']=$timer_start;
-usleep(mt_rand(0.001*1000000,0.1*1000000));
+function delay_now(){usleep(mt_rand(0.0001*1000000,0.01*1000000));}
+delay_now();
 include 'egold_settings.php';
 $limit_synch= 250;
 $percent_4= 1.0000000154321;
@@ -52,31 +59,25 @@ function convert_ipv6($ip){
   }
   return $ip;
 }
-if(!isset($noda_ip) || !$noda_ip){echo '{"error": "noda_ip in egold_settings.php"}';exit;}
+if(!isset($noda_ip) || !$noda_ip){echo '{"error": "noda_ip in egold_settings.php"}';exit_now();}
 $noda_ip=convert_ipv6(preg_replace("/[^0-9a-z.:]/",'',$noda_ip));
-if(!isset($noda_wallet) || !$noda_wallet){echo '{"error": "noda_wallet in egold_settings.php"}';exit;}
+if(!isset($noda_wallet) || !$noda_wallet){echo '{"error": "noda_wallet in egold_settings.php"}';exit_now();}
 $noda_wallet=preg_replace("/[^0-9]/",'',$noda_wallet);
-if(!isset($host_db) || !$host_db){echo '{"error": "host_db in egold_settings.php"}';exit;}
-if(!isset($database_db) || !$database_db){echo '{"error": "database_db in egold_settings.php"}';exit;}
-if(!isset($user_db) || !$user_db){echo '{"error": "user_db in egold_settings.php"}';exit;}
-if(!isset($password_db) || !$password_db){echo '{"error": "password_db in egold_settings.php"}';exit;}
+if(!isset($host_db) || !$host_db){echo '{"error": "host_db in egold_settings.php"}';exit_now();}
+if(!isset($database_db) || !$database_db){echo '{"error": "database_db in egold_settings.php"}';exit_now();}
+if(!isset($user_db) || !$user_db){echo '{"error": "user_db in egold_settings.php"}';exit_now();}
+if(!isset($password_db) || !$password_db){echo '{"error": "password_db in egold_settings.php"}';exit_now();}
 if(!isset($prefix_db) || !$prefix_db)$prefix_db='egold';
 if(isset($noda_trust))foreach($noda_trust as $key=> $val)if(!$val || (!filter_var($val, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && !filter_var($val, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)))unset($noda_trust[$key]);
-if(!isset($noda_trust) || count($noda_trust)<3){echo '{"error": "noda_trust minimum 3 nodas in egold_settings.php"}';exit;}
+if(!isset($noda_trust) || count($noda_trust)<3){echo '{"error": "noda_trust minimum 3 nodas in egold_settings.php"}';exit_now();}
 if(($key=array_search($noda_ip,$noda_trust)) !== FALSE){array_splice($noda_trust, $key, 1);}
 $stop=0; 
 if(isset($argv[1]) || $_SERVER['SERVER_NAME']=='127.0.0.1' || $_SERVER['SERVER_NAME']=='localhost')$host_ip=$noda_ip;
 else {
-	$noda_ip_now= convert_ipv6(preg_replace("/[^0-9a-z.:]/",'',$_SERVER['SERVER_NAME']));
-	$noda_site_now= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off'?'https://'.$_SERVER['SERVER_NAME']:'http://'.$_SERVER['SERVER_NAME']);
-  if($noda_ip!= $noda_ip_now && $noda_site!= $noda_site_now){
-		if(isset($noda_site) && $noda_site){echo '{"noda_site": "false", "error": "'.$noda_site.' != '.$noda_site_now.'"}';exit;} 
-		else {echo '{"noda_ip": "false", "error": "'.$noda_ip.' != '.$noda_ip_now.'"}';exit;}
-	} else if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']!='off' && $noda_site!= $noda_site_now){echo '{"noda_ip": "false", "error": "'.$noda_ip.' != '.$noda_ip_now.'"}';exit;}
   if(!empty($_SERVER['HTTP_CLIENT_IP']))$host_ip=$_SERVER['HTTP_CLIENT_IP'];
   else if(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))$host_ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
   else $host_ip=$_SERVER['REMOTE_ADDR'];
-  if(!$host_ip){echo '{"user_ip": "false"}';exit;}
+  if(!$host_ip){echo '{"user_ip": "false"}';exit_now();}
   $host_ip= explode(',',$host_ip);
   $host_ip=$host_ip[0];
   $host_ip=preg_replace("/[^0-9a-z.:]/",'',$host_ip);
@@ -248,15 +249,14 @@ DROP TABLE IF EXISTS `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wa
 COMMIT;";
     $result= mysqli_multi_query($mysqli_connect,$query) or die("error_del_bd");
   }
-  mysqli_close($mysqli_connect);
-  exit;
+  exit_now();
 }
 query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='version'");
 if(!isset($sqltbl['value']) || ((float)$sqltbl['value']>=1.7 && (float)$sqltbl['value']<(float)$version)){
 	query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='".$version."', `name`='version';");
 }
 query_bd("SELECT count(*) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `date`>=UNIX_TIMESTAMP()-9 LIMIT 1;");
-if(isset($sqltbl['count']) && $sqltbl['count']>$ddos_protect){echo '{"noda":"timeout"}';mysqli_close($mysqli_connect);exit;}
+if(isset($sqltbl['count']) && $sqltbl['count']>$ddos_protect){echo '{"noda":"timeout"}';exit_now();}
 $type['type']="a-z";
 $type['wallet']="0-9";
 $type['recipient']=$type['wallet'];
@@ -346,18 +346,25 @@ if(isset($argv[1]) && $argv[1]=="synch"){$request=[];$request['type']="synch";}
 if(!isset($request)) $stop=1; 
 query_bd("SELECT IFNULL((SELECT `countconnect` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `host`='".$host_ip."' and `date`>=UNIX_TIMESTAMP()-9 LIMIT 1),0) as countconnect, UNIX_TIMESTAMP() as now;");
 if(isset($sqltbl['now']) && $sqltbl['now']){
+	delay_now();
   $json_arr['time']= $sqltbl['now'];
-  if(isset($sqltbl['countconnect']) && $sqltbl['countconnect']){
-    $json_arr['countconnect']=$sqltbl['countconnect'];
-    if($sqltbl['countconnect']> 16){
-      $stop= 1;
-      $json_arr['countconnect']= $sqltbl['countconnect'];
-      query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `date`= UNIX_TIMESTAMP() WHERE `host`= '".$host_ip."';");
-      echo '{"noda":"timeout"}';mysqli_close($mysqli_connect);exit;
-    }
-  }
-  if(isset($json_arr['countconnect']))query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `countconnect`=`countconnect`+1 WHERE `host`= '".$host_ip."';");
-  else query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `host`= '".$host_ip."', `countconnect`=1, `date`= UNIX_TIMESTAMP();");
+	if($noda_ip!=$host_ip){
+		if(isset($sqltbl['countconnect']) && $sqltbl['countconnect']){
+			$json_arr['countconnect']=$sqltbl['countconnect'];
+			if($sqltbl['countconnect']> 16){
+				$stop= 1;
+				$json_arr['countconnect']= $sqltbl['countconnect'];
+				query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `date`= UNIX_TIMESTAMP() WHERE `host`= '".$host_ip."';");
+				echo '{"noda":"timeout"}';exit_now();
+			}
+		}
+		if(isset($json_arr['countconnect']))query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `countconnect`=`countconnect`+1 WHERE `host`= '".$host_ip."';");
+		else query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `host`= '".$host_ip."', `countconnect`=1, `date`= UNIX_TIMESTAMP();");
+		if(!(mysqli_affected_rows($mysqli_connect)>=1)){
+			delay_now();
+			query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` SET `countconnect`=`countconnect`+1 WHERE `host`= '".$host_ip."';");
+		}
+	}
   $json_arr['noda']=$noda_ip;
   function gold_wallet_view($wallet){return 'G-'.substr($wallet,0,4).'-'.substr($wallet,4,5).'-'.substr($wallet,9,4).'-'.substr($wallet,13,5);}
   function timer($time){
@@ -409,7 +416,7 @@ if(isset($sqltbl['now']) && $sqltbl['now']){
   }
   if(($stop==1 || $request['type']=="wallet") && isset($email_domain) && $email_domain)$json_arr['email_domain']= $email_domain;
   if($stop==1 && isset($noda_site) && $noda_site)$json_arr['noda_site']= $noda_site;
-} else {echo '{"error":"time"}';mysqli_close($mysqli_connect);exit;}
+} else {echo '{"error":"time"}';exit_now();}
 if((isset($request['type']) && $request['type']=="synch") || (isset($request['nodause']) && isset($request['date']) && isset($request['nodawallet'])))$json_arr['send_noda']= 1;
 else $json_arr['send_noda']= 0;
 if($stop!=1 && $request['type']=="balanceall"){
@@ -426,7 +433,7 @@ if($stop!=1 && ($request['type']=="send" || $request['type']=="history") && (!is
 	$request['pin']=0;
 }
 if($stop!=1 && ($request['type']=="height" || ($request['type']=="send" && $json_arr['send_noda']!=1))) {
-  if(!isset($request['wallet']) || strlen($request['wallet'])!=18){echo '{"wallet":"false"}';mysqli_close($mysqli_connect);exit;}
+  if(!isset($request['wallet']) || strlen($request['wallet'])!=18){echo '{"wallet":"false"}';exit_now();}
   if(isset($request['nodause']))$nodause= $request['nodause'];
   else $nodause= $noda_ip;
   $wallet= wallet($request['wallet'],$json_arr['time'],0);
@@ -439,15 +446,16 @@ if($stop!=1 && ($request['type']=="height" || ($request['type']=="send" && $json
       $json_arr['height']= $sqltbl['height'];
       $json_arr['date']= $sqltbl['date'];
     }
-    if(isset($request['height']) && (int)$request['height']>=0 && (int)$request['height']==$request['height'] && $json_arr['height']!=$request['height']-1){echo '{"height":"false"}';mysqli_close($mysqli_connect);exit;}
+    if(isset($request['height']) && (int)$request['height']>=0 && (int)$request['height']==$request['height'] && $json_arr['height']!=$request['height']-1){echo '{"height":"false"}';exit_now();}
     if($request['type']=="height")$stop=1;
-    else if($json_arr['time']-$json_arr['date']<=4){echo '{"send":"timeout"}';mysqli_close($mysqli_connect);exit;}
-  } else {echo '{"wallet":"unavailable"}';mysqli_close($mysqli_connect);exit;}
+    else if($json_arr['time']-$json_arr['date']<=4){echo '{"send":"timeout"}';exit_now();}
+  } else {echo '{"wallet":"unavailable"}';exit_now();}
   unset($nodause);
 }
 if($stop!=1){
   function connect_noda_multi($urls,$path,$post,$timer){
     global $mysqli_connect,$sqltbl,$noda_ip,$json_arr;
+		delay_now();
     if(!is_array($urls)){
       $url= $urls; 
       $urls= array();
@@ -511,7 +519,7 @@ if($stop!=1){
           if(isset($recipient['wallet'])){
             query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`=`balance`+'".($recipient['noda']==$recipient['nodause']?$recipient['percent_5']:$recipient['percent_4'])."'+'".$sqltbl_arr['money']."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$recipient['wallet']."';");
 					} else if($sqltbl_arr['signpubreg'] && $sqltbl_arr['signreg']){
-						query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$sqltbl_arr['recipient']."',`ref1`= '".$wallet['wallet']."',`ref2`= '".$wallet['ref1']."',`ref3`= '".$wallet['ref2']."',`balance`= '3',`height`= '0',`date` = '".$sqltbl_arr['date']."',`balance_ref`=`balance`, `date_ref`=`date`, `percent_ref`=0, `signpub`= '".$sqltbl_arr['signpubreg']."',`sign`= '".$sqltbl_arr['signreg']."', `checkwallet`='".$json_arr['time']."', `view`=3;");
+						query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$sqltbl_arr['recipient']."',`ref1`= '".$wallet['wallet']."',`ref2`= '".$wallet['ref1']."',`ref3`= '".$wallet['ref2']."',`balance`= '3',`height`= '0',`date` = '".$sqltbl_arr['date']."',`balance_ref`=`balance`, `date_ref`=`date`, `percent_ref`=0, `signpub`= '".$sqltbl_arr['signpubreg']."',`sign`= '".$sqltbl_arr['signreg']."', `checkwallet`='".$json_arr['time']."', `view`=3;");
 					}
           query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='".($sqltbl_arr['nodaown']==1?$sqltbl_arr['nodause']:'')."', `nodause`='".$sqltbl_arr['nodause']."', `balance`='".$wallet_balance."', `balance_ref`=`balance`, `percent_ref`=0, `height`='".$sqltbl_arr['height']."', `date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`), `date_ref`=`date`, `view`=IF(`view`=1,3,`view`), `signpubnew`='".$sqltbl_arr['signpubnew']."', `signnew`='".$sqltbl_arr['signnew']."', `signpub`='".$sqltbl_arr['signpub']."', `sign`='".$sqltbl_arr['sign']."' WHERE `wallet`='".$wallet['wallet']."';");
           if(mysqli_affected_rows($mysqli_connect)>=1){
@@ -551,7 +559,7 @@ if($stop!=1){
                 query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=1, `date`='".$sqltbl_arr['date']."' WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
 								query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`=`value`+1 WHERE `name`='transactionscount';");
 								if(mysqli_affected_rows($mysqli_connect)>=1){}
-              }else query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=0, `date`='".$sqltbl_arr['date']."' WHERE `wallet`= '".$sqltbl_arr['wallet']." and `nodatrue`!=0';");
+              }else query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `nodatrue`=0, `date`='".$sqltbl_arr['date']."' WHERE `wallet`= '".$sqltbl_arr['wallet']."' and `nodatrue`!='0';");
               if(mysqli_affected_rows($mysqli_connect)>=1){}
             }
           }
@@ -572,6 +580,7 @@ if($stop!=1){
   }
   function send($request,$synch){
     global $json_arr,$sqltbl,$mysqli_connect,$noda_wallet,$noda_ip,$host_ip;
+		delay_now();
     $stop=0;
     unset($json_arr['walletnew']);
     unset($json_arr['recipient']);
@@ -626,7 +635,7 @@ if($stop!=1){
     if(isset($sqltbl['height'])){
       $json_arr['height']= 'double0';
     } else {
-      query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `wallet`= '".$request['wallet']."', `height`= '".$request['height']."', `pin`= '".$request['pin']."', `date`= '".$datecheck."', `nodause`= '".$nodause."', `hash`= '".$request_sha."', `checkhistory`=9;");
+      query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `wallet`= '".$request['wallet']."', `height`= '".$request['height']."', `pin`= '".$request['pin']."', `date`= '".$datecheck."', `nodause`= '".$nodause."', `hash`= '".$request_sha."', `checkhistory`=9;");
       if(mysqli_affected_rows($mysqli_connect)>=1){
         $sqltbl= query_bd("SELECT `wallet`,`balance` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`= '".$nodause."' ORDER BY `date` DESC LIMIT 1;");
         if(isset($sqltbl['wallet']) && $sqltbl['wallet']){
@@ -684,7 +693,7 @@ if($stop!=1){
             $wallet['height']=$sqltbl['height'];
             $wallet['date']=$sqltbl['date'];
             $wallet['money']=$sqltbl['money'];
-			$wallet['pin']=$sqltbl['pin'];
+						$wallet['pin']=$sqltbl['pin'];
          }
           if($synch==1 && $wallet['height']<$request['height']-1){
             $post['type']= 'history';
@@ -708,9 +717,9 @@ if($stop!=1){
             }
           }
           if($checkhistory>=0){
-           query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `wallet`= '".$request['wallet']."',`recipient`= '".$recipient['wallet']."',`money`= '".$request['money']."',`pin`= '".$request['pin']."',`height`= '".$request['height']."',`date`= '".$datecheck."',`nodawallet`= '".$nodawallet."',`nodause`= '".$nodause."',`nodaown`= '".$nodaown."',`signpubreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signpubreg']:'')."',`signreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signreg']:'')."',`signpubnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew']:'')."',`signnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signnew']:'')."',`signpub`= '".$request['signpub']."',`sign`= '".$request['sign']."',`hash`= '".$request_sha."', `checkhistory`= '".$checkhistory."';");
+					 query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `recipient`= '".$recipient['wallet']."',`money`= '".$request['money']."',`nodawallet`= '".$nodawallet."',`nodaown`= '".$nodaown."',`signpubreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signpubreg']:'')."',`signreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signreg']:'')."',`signpubnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew']:'')."',`signnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signnew']:'')."',`signpub`= '".$request['signpub']."',`sign`= '".$request['sign']."', `checkhistory`= '".$checkhistory."' WHERE `date`= '".$datecheck."' and `wallet`= '".$request['wallet']."' and `hash`= '".$request_sha."' and `height`= '".$request['height']."' and `pin`= '".$request['pin']."' and `nodause`= '".$nodause."';");
            if(mysqli_affected_rows($mysqli_connect)>=1){
-              usleep(0.1*1000000);
+              delay_now();
               if($checkhistory!=0){
                 $json_arr['error']= 'send';
               } else {
@@ -723,28 +732,24 @@ if($stop!=1){
 									$json_arr['send']= 'true';
 								}
               }
-              usleep(0.1*1000000);
+              delay_now();
               if($recipient['wallet']>1)$json_arr['recipient']= gold_wallet_view($recipient['wallet']);
               if(isset($walletnew))$json_arr['walletnew']= gold_wallet_view($walletnew);
               if($synch==1){
-                $query= "SELECT `noda` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`!='' and `noda`!='".$noda_ip."' and `noda`!='".$host_ip."' and `checknoda`<= '".$json_arr['time']."' and `balance`>=100 and `view`>0 and `noda` NOT IN (SELECT DISTINCT(`host`) FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `countconnect`>= 9 and `date`>=UNIX_TIMESTAMP()-14) ORDER BY `checknoda` DESC LIMIT 16;";
+                $query= "SELECT `noda` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`!='' and `noda`!='".$noda_ip."' and `noda`!='".$host_ip."' and `checknoda`<= '".$json_arr['time']."' and `balance`>=100 and `view`>0 and `noda` NOT IN (SELECT DISTINCT(`host`) FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `countconnect`>= 16 and `date`>=UNIX_TIMESTAMP()-14) ORDER BY RAND() LIMIT 64;";
                 $result= mysqli_query($mysqli_connect,$query) or die("error_synchnow");
                 while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))$nodas_synch[$sqltbl_arr['noda']]= $sqltbl_arr['noda'];
-                if(isset($nodas_synch)){
+								$query= "SELECT `noda` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`!='' and `noda`!='".$noda_ip."' and `noda`!='".$host_ip."' and `checknoda`<= '".$json_arr['time']."' and `balance`>=100 and `view`>0 and `noda` NOT IN (SELECT DISTINCT(`host`) FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `countconnect`>= 16 and `date`>=UNIX_TIMESTAMP()-14) ORDER BY `balance` DESC LIMIT 32;";
+                $result= mysqli_query($mysqli_connect,$query) or die("error_synchnow");
+                while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))if(!in_array($sqltbl_arr['noda'],$nodas_synch))$nodas_synch[$sqltbl_arr['noda']]= $sqltbl_arr['noda'];
+                if(isset($nodas_synch) && count($nodas_synch)>0){
                   $request['nodawallet']=$nodawallet;
                   $request['nodause']=$nodause;
                   $request['nodaown']=$nodaown;
                   $request['date']=$datecheck;
                   unset($request['password']);
                   if(isset($recipient['wallet']))$request['recipient']= $recipient['wallet'];
-                  $post=$request;
-                  for($i=0;$i<($nodause==$noda_ip?3:1) && isset($nodas_synch) && count($nodas_synch)>0;$i++){
-                    if($i>0)usleep(mt_rand(0.01*1000000,0.5*1000000));
-                    else usleep(mt_rand(0,0.001*1000000));
-                    $nodas_send= random($nodas_synch,3);
-                    foreach($nodas_send as $key => $value)unset($nodas_synch[$key]);
-                    $json= connect_noda_multi($nodas_send,'',$post,3);
-                  }
+									$json= connect_noda_multi(random($nodas_synch,7),'',$request,3);
                 }
               }
             } else $json_arr['transaction']= 'false';
@@ -777,7 +782,7 @@ if($stop!=1){
           $send_arr['wallet']=$value['wallet'];
           $send_arr['recipient']=$value['recipient'];
           $send_arr['money']=$value['money'];
-		  $send_arr['pin']=$value['pin'];
+					$send_arr['pin']=$value['pin'];
           $send_arr['height']=$value['height'];
           $send_arr['nodawallet']=$value['nodawallet'];
           $send_arr['nodause']=$value['nodause'];
@@ -791,7 +796,7 @@ if($stop!=1){
           $send_arr['date']=$value['date'];
           send($send_arr,0);
           if(isset($json_arr['send']) && isset($wallet['height'])){
-           $wallet['height']++;
+						$wallet['height']++;
             $wallet['date']=$value['date'];
             if($send_arr['nodaown']==1)$wallet['noda']=$value['nodause'];
             else $wallet['noda']='';
@@ -802,7 +807,7 @@ if($stop!=1){
             $wallet['sign']=$value['sign'];
           }
           unset($send_arr);
-          usleep(0.001*1000000);
+          delay_now();
         }
       }  
       $json_arr['transaction_check']=count($transaction);
@@ -1093,7 +1098,7 @@ if($stop!=1){
 									if($balance_check[$value['wallet']]>0.5*($nodas_balance_sum_bd-$noda_balance_noda_ip))$wallets_bd_add[$value['wallet']]= "'".implode("','",$value)."','','','','1'";
 									else $wallets_bd_add[$value['wallet']]= "'".implode("','",$value)."','".$balance_check[$sqltbl_arr['wallet']]."','".$nodas_balance_sum."','".$checkbalancenodatime."','0'";
 								}
-								query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` (`wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `balance_ref`, `date_ref`, `percent_ref`, `height`, `signpubnew`, `signnew`, `signpub`, `sign`, `checkbalance`, `checkbalanceall`, `checkwallet`, `view`) VALUES (".implode("),(",$wallets_bd_add).");");
+								query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` (`wallet`, `ref1`, `ref2`, `ref3`, `noda`, `nodause`, `balance`, `date`, `balance_ref`, `date_ref`, `percent_ref`, `height`, `signpubnew`, `signnew`, `signpub`, `sign`, `checkbalance`, `checkbalanceall`, `checkwallet`, `view`) VALUES (".implode("),(",$wallets_bd_add).");");
 								if(mysqli_affected_rows($mysqli_connect)>=1){}
 								foreach ($wallets_bd_add as $key => $value) {
 									if(isset($noda_json_arr_all_wallets[$key]) && isset($sqltbl_arr) && isset($sqltbl_arr['wallet'])){
@@ -1341,12 +1346,12 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
   set_time_limit(300);
   $skip=0;
   if($request['type']!="send" || (int)gmdate("s")>5){
-    if($request['type']!="send")usleep(mt_rand(0.1*1000000,0.5*1000000));
+    if($request['type']!="send")delay_now();
     $query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name` IN ('synch_now','synch_wallet');";
     $result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_settings");
     while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
       if($sqltbl_arr['name']=='synch_now' && gmdate("Y-m-d H:i",$sqltbl_arr['value'])==gmdate("Y-m-d H:i")){
-        if($request['type']!="send"){echo '{"synch":"now"}';mysqli_close($mysqli_connect);exit;}
+        if($request['type']!="send"){echo '{"synch":"now"}';exit_now();}
         else $skip=1;
       }
       else if($sqltbl_arr['name']=='synch_wallet')$post_synchwallets['synch_wallet']= $sqltbl_arr['value'];
@@ -1366,11 +1371,11 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 		}
 		if(isset($noda_balance) && $noda_balance)$noda_balance_count= count($noda_balance);
 		else $noda_balance_count=0;
-		usleep(0.1*1000000);
+		delay_now();
 		$wallet_synch_end=0;
 		wallet_synch((isset($post_synchwallets)?$post_synchwallets:''));
 		if($wallet_synch_end>0){
-			usleep(0.1*1000000);
+			delay_now();
 			wallet_synch('');
 		}
 		timer(6);
@@ -1379,7 +1384,7 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 			else history_synch($i);
 			if(isset($json_arr['transaction_check']) && $json_arr['transaction_check']>900){
 				$j= $json_arr['transaction_check'];
-				usleep(0.1*1000000);
+				delay_now();
 			} else $j=0;
 		}
 		timer(9);
@@ -1477,47 +1482,27 @@ if($stop!=1 && $request['type']=="send" && isset($request['wallet']) && isset($r
     else if($json_arr['send_noda']!=1 && $wallet['balance']+($noda_wallet==$wallet['wallet']?$wallet['percent_5']:$wallet['percent_4'])< $request['money']+2)$json_arr['balance']= 'false';
     else if($wallet['view']==0 || ($wallet['view']==2 && $json_arr['send_noda']!=1))$json_arr['wallet']= 'synch';
     else{
-      if($json_arr['send_noda']==1){
-        if($request['date']<=$json_arr['time']+2){
-          query_bd("SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`= '".$host_ip."' ORDER BY `date` DESC LIMIT 1;");
-          if(!isset($sqltbl['wallet'])){
-           $post_noda['type']= 'history';
-           $post_noda['wallet']= $request['wallet'];
-           $post_noda['height']= $request['height'];
-           $post_noda['all']= 2;
-           $post_noda['limit']= 1;
-           $json_noda= connect_noda_multi($host_ip,'',$post_noda,5);
-            if(!isset($json_noda[$host_ip][0]) || !isset($json_noda[$host_ip][0]['wallet']) || $json_noda[$host_ip][0]['wallet']!=$request['wallet'] || !isset($json_noda[$host_ip][0]['recipient']) || $json_noda[$host_ip][0]['recipient']!=$request['recipient'] || !isset($json_noda[$host_ip][0]['money']) || $json_noda[$host_ip][0]['money']!=$request['money'] || !isset($json_noda[$host_ip][0]['pin']) || $json_noda[$host_ip][0]['pin']!=$request['pin'] || !isset($json_noda[$host_ip][0]['height']) || $json_noda[$host_ip][0]['height']!=$request['height'] || !isset($json_noda[$host_ip][0]['nodawallet']) || $json_noda[$host_ip][0]['nodawallet']!=$request['nodawallet'] || !isset($json_noda[$host_ip][0]['nodause']) || $json_noda[$host_ip][0]['nodause']!=$request['nodause'] || !isset($json_noda[$host_ip][0]['date']) || $json_noda[$host_ip][0]['date']!=$request['date'] || !isset($json_noda[$host_ip][0]['signpub']) || $json_noda[$host_ip][0]['signpub']!=$request['signpub'] || !isset($json_noda[$host_ip][0]['sign']) || $json_noda[$host_ip][0]['sign']!=$request['sign']){
-              echo '{"noda_check": "false"}';mysqli_close($mysqli_connect);exit;
-            }
-          }
-        } else {
-          echo '{"noda_time_check": "false"}';mysqli_close($mysqli_connect);exit;
-        }
-      }
-      query_bd("SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`= '".$noda_ip."' ORDER BY `date` DESC LIMIT 1;");
-      if(!isset($sqltbl['wallet'])){
-        if($request['wallet']!=$noda_wallet){
-          echo '{"noda": "not_activated"}';mysqli_close($mysqli_connect);exit; 
-        }
-      } 
+			if($request['wallet']!=$noda_wallet){
+				query_bd("SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`= '".$noda_ip."' ORDER BY `date` DESC LIMIT 1;");
+				if(!isset($sqltbl['wallet'])){echo '{"noda": "not_activated"}';exit_now();}
+			}
       send($request,1);
       if(isset($json_arr['send']) && $json_arr['send']== 'true'){
         if(isset($request['password']) && $request['nodause']==$noda_ip){
           if(strlen($request['password'])==128){
             query_bd("SELECT `wallet`,`password` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` WHERE `wallet`= '".$wallet['wallet']."';");
             if(isset($sqltbl['wallet'])){
-				if($sqltbl['password']!=$request['password']){
-					query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_contacts` WHERE `wallet`= '".$wallet['wallet']."';");
-					query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `password`= '".$request['password']."', `nodatrue`=1, `date`= '".$json_arr['time']."' WHERE `wallet`= '".$wallet['wallet']."';");
-				}
-			}
-            else query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `wallet`= '".$wallet['wallet']."', `password`= '".$request['password']."', `nodatrue`=1, `date`= '".$json_arr['time']."';");
-            $json_arr['password']= 'true';
+							if($sqltbl['password']!=$request['password']){
+								query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_contacts` WHERE `wallet`= '".$wallet['wallet']."';");
+								query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `password`= '".$request['password']."', `nodatrue`=1, `date`= '".$json_arr['time']."' WHERE `wallet`= '".$wallet['wallet']."';");
+							} else $json_arr['password']= 'true';
+						} else query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` SET `wallet`= '".$wallet['wallet']."', `password`= '".$request['password']."', `nodatrue`=1, `date`= '".$json_arr['time']."';");
+            if(mysqli_affected_rows($mysqli_connect)>=1)$json_arr['password']= 'true';
+						else $json_arr['password']= 'false';
           } else $json_arr['password']= 'false';
-        } 
+        }
+				query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `host`= '".$host_ip."';");
       }
-      if(isset($json_arr['send']) && $json_arr['send']== 'true')query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `host`= '".$host_ip."';");
     }
   }
   ignore_user_abort(0);
@@ -1563,7 +1548,7 @@ if($stop!=1 && $request['type']=="contacts" && isset($request['wallet']) && isse
       $json_arr['contact']= 'del';
       $_POST['contacts']= json_decode($_POST['contacts'],true);
       if(count($_POST['contacts'])>=1 && count($_POST['contacts'])<=100){
-        usleep(0.5*1000000);
+        delay_now();
 				$index=1;
         foreach($_POST['contacts'] as $key => $value){
           if(isset($key) && preg_replace("/[^0-9a-zA-Z]/",'',$key)==$key 
@@ -1571,7 +1556,7 @@ if($stop!=1 && $request['type']=="contacts" && isset($request['wallet']) && isse
           && isset($value) && preg_replace("/[^0-9a-zA-Z]/",'',$value)==$value 
 					&& mysqli_real_escape_string($mysqli_connect,$value)==$value && strlen($value)<=255
           ){
-            query_bd("INSERT INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_contacts` SET `wallet`= '".$request['wallet']."',`number`= '".$index."', `recipient`= '".$key."', `name`= '".$value."';");
+            query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_contacts` SET `wallet`= '".$request['wallet']."',`number`= '".$index."', `recipient`= '".$key."', `name`= '".$value."';");
             if(mysqli_affected_rows($mysqli_connect)==1){
 							$json_arr['contact']= 'save';
 							$index++;
@@ -1623,6 +1608,5 @@ if($json_arr){
   if(isset($json_arr['noda_site'])) $print= str_replace("\/","/",$print);
   echo $print;
 }
-if(isset($mysqli_connect))mysqli_close($mysqli_connect);
-exit;
+exit_now();
 ?>

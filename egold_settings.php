@@ -29,7 +29,7 @@ $noda_trust[]= "";
 //$noda_trust[]= "91.106.203.179";//Example of using IPv4 node address
 
 //Amount of days for keeping transaction history and history of referrals’ assessments
-$history_day= 365;
+$history_day= 90;
 
 //In order to set automatic sending of notifications to emails according to transactions of users dealing with a certain node you should link your domain to hosting and specify it below, e.g. egold.pro. For proper email notification system operating, you need a domain not higher than of a second level. What is it and how to get it you may find on the Internet.
 $email_domain= "";
