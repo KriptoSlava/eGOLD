@@ -16,7 +16,7 @@ if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}';exit_now();}
 if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}';exit_now();}
 if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}';exit_now();}
-if(!(fileperms(__DIR__)>=16832)){echo '{"message": "Require to install chmod 700 or higher for folder: '. __DIR__ .'"}';exit_now();}
+if(!(fileperms(__DIR__)>=16832)){echo '{"message": "Required to allow writing rights for a dir folder: '. __DIR__ .'"}';exit_now();}
 $json_arr['timer_start']=microtime(true);
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 $timer_start= $json_arr['timer_start'];
