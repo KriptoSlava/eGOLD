@@ -1,5 +1,5 @@
 <?php
-$version= '1.16';//версия egold.php
+$version= '1.17';//версия egold.php
 $error_log= 0;//если =1, то ошибки будут записываться в файл: egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -8,7 +8,7 @@ if($error_log==1){
 	ini_set('error_reporting', E_ALL); 
 	ini_set('display_errors', 0);
 	ini_set('log_errors','on');
-	ini_set('error_log', __DIR__ . '/egold_error.log');
+	ini_set('error_log', __DIR__ .'/egold_error.log');
 }
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');
 function exit_now(){if(isset($mysqli_connect))mysqli_close($mysqli_connect);exit;}
@@ -16,12 +16,7 @@ if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}';exit_now();}
 if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}';exit_now();}
 if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}';exit_now();}
-if(isset($_REQUEST['version'])){
-	$archive= 'eGOLD_v'.$version.'.zip';
-	if(file_exists($archive)) $md5= ', "MD5": "'.strtoupper(hash_file('md5', $archive)).'"';
-	echo '{"version": "'.$version.'"'.(isset($md5)?', "download": "'.(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']?'https':'http').'://'.$_SERVER['SERVER_NAME'].'/'.$archive.'"'.$md5:'').'}'; 
-	exit_now();
-}
+if(!(fileperms(__DIR__)>=16832)){echo '{"message": "Require to install chmod 700 or higher for folder: '. __DIR__ .'"}';exit_now();}
 $json_arr['timer_start']=microtime(true);
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 $timer_start= $json_arr['timer_start'];
@@ -29,7 +24,21 @@ if(isset($_SESSION['timer_start']) && $timer_start-$_SESSION['timer_start']<0.00
 $_SESSION['timer_start']=$timer_start;
 function delay_now(){usleep(mt_rand(0.0001*1000000,0.01*1000000));}
 delay_now();
-include 'egold_settings.php';
+if(isset($_REQUEST['version'])){
+	$archive= 'eGOLD_v'.$version.'.zip';
+	if(file_exists($archive)) $md5= ', "MD5": "'.strtoupper(hash_file('md5', $archive)).'"';
+	echo '{"version": "'.$version.'"'.(isset($md5)?', "download": "'.(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']?'https':'http').'://'.$_SERVER['SERVER_NAME'].'/'.$archive.'"'.$md5:'').'}'; 
+	exit_now();
+}
+$filename= __DIR__ .'/send.tmp';
+if(isset($_REQUEST['type']) && $_REQUEST['type']=="send"){
+	if(isset($_REQUEST['wallet']) && $_REQUEST['wallet']>0 && isset($_REQUEST['height']) && $_REQUEST['height']>=0 && isset($_REQUEST['recipient']) && $_REQUEST['recipient'] && isset($_REQUEST['money']) && $_REQUEST['money'] && isset($_REQUEST['pin']) && $_REQUEST['pin']>=0 && isset($_REQUEST['signpub']) && $_REQUEST['signpub'] && isset($_REQUEST['sign']) && $_REQUEST['sign']){
+		if(file_exists($filename))$send_tmp= file_get_contents($filename);
+		$send_tmp_hash=$_REQUEST['wallet'].'_'.$_REQUEST['height'].'_'.hash('sha256', $_REQUEST['wallet'].$_REQUEST['height'].$_REQUEST['recipient'].$_REQUEST['money'].$_REQUEST['pin'].(isset($_REQUEST['signpubreg'])?$_REQUEST['signpubreg']:'').(isset($_REQUEST['signreg'])?$_REQUEST['signreg']:'').(isset($_REQUEST['signpubnew'])?$_REQUEST['signpubnew']:'').(isset($_REQUEST['signnew'])?$_REQUEST['signnew']:'').$_REQUEST['signpub'].$_REQUEST['sign']);
+		if(isset($send_tmp) && strpos($send_tmp, $send_tmp_hash)!== false){echo '{"send.tmp": "false"}';exit_now();}
+	} else {echo '{"send": "false"}';exit_now();}
+}
+include __DIR__ .'/egold_settings.php';
 $limit_synch= 250;
 $percent_4= 1.0000000154321;
 $percent_5= 1.0000000192901;
@@ -300,7 +309,7 @@ $type['email']="0-9";
 $type['wallets_with_noda_first']="1";
 $type['synch_wallet']="0-9";
 foreach($_REQUEST as $key=> $val) if(strlen($key)<100 && $val && strlen($val)<1440 && in_array($key,array_keys($type))) $request[$key]= preg_replace("/[^".$type[$key]."]/",'',$val);
-include 'egold_crypto/falcon.php';
+include __DIR__ .'/egold_crypto/falcon.php';
 function bchexdec($hex){
 	$dec = 0; $len = strlen($hex);
 	for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
@@ -717,8 +726,10 @@ if($stop!=1){
             }
           }
           if($checkhistory>=0){
-					 query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `recipient`= '".$recipient['wallet']."',`money`= '".$request['money']."',`nodawallet`= '".$nodawallet."',`nodaown`= '".$nodaown."',`signpubreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signpubreg']:'')."',`signreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signreg']:'')."',`signpubnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew']:'')."',`signnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signnew']:'')."',`signpub`= '".$request['signpub']."',`sign`= '".$request['sign']."', `checkhistory`= '".$checkhistory."' WHERE `date`= '".$datecheck."' and `wallet`= '".$request['wallet']."' and `hash`= '".$request_sha."' and `height`= '".$request['height']."' and `pin`= '".$request['pin']."' and `nodause`= '".$nodause."';");
-           if(mysqli_affected_rows($mysqli_connect)>=1){
+						delay_now();
+						query_bd("UPDATE IGNORE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `recipient`= '".$recipient['wallet']."',`money`= '".$request['money']."',`nodawallet`= '".$nodawallet."',`nodaown`= '".$nodaown."',`signpubreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signpubreg']:'')."',`signreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signreg']:'')."',`signpubnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew']:'')."',`signnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signnew']:'')."',`signpub`= '".$request['signpub']."',`sign`= '".$request['sign']."',`checkhistory`= '".$checkhistory."' WHERE `date`= '".$datecheck."' and `wallet`= '".$request['wallet']."' and `hash`= '".$request_sha."' and `height`= '".$request['height']."' and `pin`= '".$request['pin']."' and `nodause`= '".$nodause."' and `sign`!= '".$request['sign']."';");
+						if(mysqli_affected_rows($mysqli_connect)>=1){
+							file_put_contents($GLOBALS['filename'], $GLOBALS['send_tmp_hash']."\n", FILE_APPEND);
               delay_now();
               if($checkhistory!=0){
                 $json_arr['error']= 'send';
@@ -749,14 +760,12 @@ if($stop!=1){
                   $request['date']=$datecheck;
                   unset($request['password']);
                   if(isset($recipient['wallet']))$request['recipient']= $recipient['wallet'];
-									$json= connect_noda_multi(random($nodas_synch,7),'',$request,3);
+									$json= connect_noda_multi(random($nodas_synch,($nodause==$noda_ip?16:3)),'',$request,3);
                 }
               }
             } else $json_arr['transaction']= 'false';
           } else $json_arr['wallet']= 'false';
-        } else {
-          $json_arr['wallet']= 'false';
-        }
+        } else $json_arr['sign']= 'false';
       }
       query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$request['wallet']."' and `height`= '".$request['height']."' and `hash`= '".$request_sha."' and `recipient`='';");
     }
@@ -1467,6 +1476,7 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 		}
 		query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checknoda`='' WHERE `view`>0 and `noda`='' and `checknoda`!='';");
 		query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `date`< UNIX_TIMESTAMP()-16;");
+		if(file_exists($GLOBALS['filename']))unlink($GLOBALS['filename']);
 		$json_arr['synch']= 'true';
 	}  
   ignore_user_abort(0);
