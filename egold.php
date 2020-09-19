@@ -1,11 +1,11 @@
 <?php
-$version= '1.18';//version egold.php
+$version= '1.19';//version egold.php
 $error_log= 0;//if =1, errors will be written to a file: egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
 	mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 	error_reporting(E_ALL);
-	ini_set('error_reporting', E_ALL); 
+	ini_set('error_reporting', E_ALL);
 	ini_set('display_errors', 0);
 	ini_set('log_errors','on');
 	ini_set('error_log', __DIR__ .'/egold_error.log');
@@ -16,7 +16,12 @@ if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}';exit_now();}
 if(!extension_loaded('gmp')){echo '{"message": "Require to install GMP"}';exit_now();}
 if(!extension_loaded('curl')){echo '{"message": "Require to install CURL"}';exit_now();}
-if(!(fileperms(__DIR__)>=16832)){echo '{"message": "Required to allow writing rights for a dir folder: '. __DIR__ .'"}';exit_now();}
+$dir_temp= __DIR__ .'/egold_temp';$dir_temp_index= $dir_temp.'/index.html';
+if(!file_exists($dir_temp_index) || !(fileperms($dir_temp)>=16832)){
+	if(!file_exists($dir_temp))mkdir($dir_temp, 0755);
+	if(file_exists($dir_temp) && !file_exists($dir_temp_index))file_put_contents($dir_temp_index, "");
+	if(!file_exists($dir_temp_index) || !(fileperms($dir_temp)>=16832)){echo '{"message": "Required to allow writing rights for a dir folder: '.$dir_temp.'"}';exit_now();}
+}
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 function delay_now(){usleep(mt_rand(0.0001*1000000,0.01*1000000));}
 delay_now();
@@ -36,21 +41,14 @@ if(isset($_REQUEST['version'])){
 	exit_now();
 }
 if(isset($argv[1]) && $argv[1]=="synch"){$_REQUEST=[];$_REQUEST['type']="synch";}
-$filename_tmp_send= __DIR__ .'/egold_tmp_send.log';
-$filename_tmp_synch= __DIR__ .'/egold_tmp_synch.log';
-if(isset($_REQUEST['type'])){
+if(isset($_REQUEST['type']) && ($_REQUEST['type']=="send" || $_REQUEST['type']=="synch")){
+	$filename_tmp_synch= $dir_temp.'/synch_'.date("i",$json_arr['timer_start']);
 	if($_REQUEST['type']=="send"){
 		if(isset($_REQUEST['wallet']) && $_REQUEST['wallet']>0 && isset($_REQUEST['height']) && $_REQUEST['height']>=0 && isset($_REQUEST['recipient']) && $_REQUEST['recipient'] && isset($_REQUEST['money']) && $_REQUEST['money'] && isset($_REQUEST['pin']) && $_REQUEST['pin']>=0 && isset($_REQUEST['signpub']) && $_REQUEST['signpub'] && isset($_REQUEST['sign']) && $_REQUEST['sign']){
-			if(file_exists($filename_tmp_send))$block_send= file_get_contents($filename_tmp_send);
-			$block_tmp_send=$_REQUEST['wallet'].'_'.$_REQUEST['height'].'_'.hash('sha256', $_REQUEST['wallet'].$_REQUEST['height'].$_REQUEST['recipient'].$_REQUEST['money'].$_REQUEST['pin'].(isset($_REQUEST['signpubreg'])?$_REQUEST['signpubreg']:'').(isset($_REQUEST['signreg'])?$_REQUEST['signreg']:'').(isset($_REQUEST['signpubnew'])?$_REQUEST['signpubnew']:'').(isset($_REQUEST['signnew'])?$_REQUEST['signnew']:'').$_REQUEST['signpub'].$_REQUEST['sign']);
-			if(isset($block_send) && strpos($block_send, $block_tmp_send)!== false){echo '{"send": "false"}';exit_now();}
+			$filename_tmp_send= $dir_temp.'/'.$_REQUEST['wallet'].'_'.$_REQUEST['height'].'_'.hash('sha256', $_REQUEST['wallet'].$_REQUEST['height'].$_REQUEST['recipient'].$_REQUEST['money'].$_REQUEST['pin'].(isset($_REQUEST['signpubreg'])?$_REQUEST['signpubreg']:'').(isset($_REQUEST['signreg'])?$_REQUEST['signreg']:'').(isset($_REQUEST['signpubnew'])?$_REQUEST['signpubnew']:'').(isset($_REQUEST['signnew'])?$_REQUEST['signnew']:'').$_REQUEST['signpub'].$_REQUEST['sign']);
+			if(file_exists($filename_tmp_send)){echo '{"send": "false"}';exit_now();}
 		} else {echo '{"send": "false"}';exit_now();}
-	}
-	$block_tmp_synch= "synch_".strtotime(date("Y-m-d H:i:00",$json_arr['timer_start']+5));
-	if($_REQUEST['type']=="synch"){
-		if(file_exists($filename_tmp_synch))$block_synch= file_get_contents($filename_tmp_synch);
-		if(isset($block_synch) && strpos($block_synch, $block_tmp_synch)!== false){echo '{"synch":"now"}';exit_now();}
-	}
+	} else if(file_exists($filename_tmp_synch)){echo '{"synch":"now"}';exit_now();}
 }
 include __DIR__ .'/egold_settings.php';
 $limit_synch= 250;
@@ -274,9 +272,12 @@ COMMIT;";
   }
   exit_now();
 }
-query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='version'");
-if(!isset($sqltbl['value']) || ((float)$sqltbl['value']>=1.7 && (float)$sqltbl['value']<(float)$version)){
-	query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='".$version."', `name`='version';");
+if(isset($_REQUEST['type']) && $_REQUEST['type']=="synch"){
+	query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='version'");
+	$sqltbl['value']= (float)str_replace('1.','',$sqltbl['value']);
+	if(!isset($sqltbl['value']) || ($sqltbl['value']>=1.7 && $sqltbl['value']<(float)str_replace('1.','',$version))){
+		query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='".$version."', `name`='version';");
+	}
 }
 query_bd("SELECT count(*) as count FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `date`>=UNIX_TIMESTAMP()-9 LIMIT 1;");
 if(isset($sqltbl['count']) && $sqltbl['count']>$ddos_protect){echo '{"noda":"timeout"}';exit_now();}
@@ -743,7 +744,7 @@ if($stop!=1){
 						query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` as t1, (SELECT `wallet`,`height`,`hash` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE (`wallet`,`height`,`hash`) IN (('".$request['wallet']."', '".$request['height']."', '".$request_sha."'))) as t2 SET t1.`recipient`= '".$recipient['wallet']."',t1.`money`= '".$request['money']."',t1.`nodawallet`= '".$nodawallet."',t1.`nodaown`= '".$nodaown."',t1.`signpubreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signpubreg']:'')."',t1.`signreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signreg']:'')."',t1.`signpubnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew']:'')."',t1.`signnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signnew']:'')."',t1.`signpub`= '".$request['signpub']."',t1.`sign`= '".$request['sign']."',t1.`checkhistory`= '".$checkhistory."' WHERE t2.`wallet`!='' and (t1.`wallet`,t1.`height`,t1.`hash`) IN ((t2.`wallet`,t2.`height`,t2.`hash`)) and t1.`sign`!= '".$request['sign']."' and t1.`date`= '".$datecheck."' and t1.`pin`= '".$request['pin']."' and t1.`nodause`= '".$nodause."';");
 						if(mysqli_affected_rows($mysqli_connect)>=1){
 							delay_now();
-							file_put_contents($GLOBALS['filename_tmp_send'], $GLOBALS['block_tmp_send']."\n", FILE_APPEND);
+							if(isset($GLOBALS['filename_tmp_send']) && !file_exists($GLOBALS['filename_tmp_send']))file_put_contents($GLOBALS['filename_tmp_send'], "");
               if($checkhistory!=0){
                 $json_arr['error']= 'send';
               } else {
@@ -1375,8 +1376,8 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
   ignore_user_abort(1);
   set_time_limit(55);
   $skip=0;
-  if($request['type']!="send" || ((int)gmdate("s")>5 && (!isset($GLOBALS['block_synch']) || strpos($GLOBALS['block_synch'], $GLOBALS['block_tmp_synch'])=== false))){
-    delay_now();
+	delay_now();
+  if($request['type']=="synch" || (!file_exists($GLOBALS['filename_tmp_synch']) && (int)gmdate("s")>5)){
     $query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name` IN ('synch_now','synch_wallet');";
     $result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_settings");
     while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
@@ -1388,7 +1389,8 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
   } else $skip=1;
 	if($skip!=1){
 		query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`= '".$json_arr['time']."' WHERE `name`= 'synch_now';");
-		file_put_contents($GLOBALS['filename_tmp_synch'], $GLOBALS['block_tmp_synch']."\n", FILE_APPEND);
+		foreach(glob($GLOBALS['dir_temp']."/*") as $file){if(time()-filectime($file)>50 && $file!=$dir_temp_index){unlink($file);}}
+		if(!file_exists($GLOBALS['filename_tmp_synch']))file_put_contents($GLOBALS['filename_tmp_synch'], "");
 		$checkbalancenodatime=0;
 		$noda_balance_noda_ip=0;
 		$query= "SELECT `noda`, SUBSTRING_INDEX(GROUP_CONCAT(`balance` ORDER BY `date` DESC), ',', 1) as balance, MAX(`checknoda`) as checknoda FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `view`>0 and `noda`!='' and `checknoda`<= '".$json_arr['time']."' and `balance`>=100 GROUP BY `noda` ORDER BY `noda`='".$noda_ip."' DESC,`checknoda` LIMIT 33;";
@@ -1497,8 +1499,6 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 		}
 		query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `checknoda`='' WHERE `view`>0 and `noda`='' and `checknoda`!='';");
 		query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_protect` WHERE `date`< UNIX_TIMESTAMP()-16;");
-		if(file_exists($GLOBALS['filename_tmp_send']))unlink($GLOBALS['filename_tmp_send']);
-		file_put_contents($GLOBALS['filename_tmp_synch'],$GLOBALS['block_tmp_synch']."\n");
 		$json_arr['synch']= 'true';
 	}  
   ignore_user_abort(0);
