@@ -1,5 +1,5 @@
 <?php
-$version= '1.20';
+$version= '1.21';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -275,7 +275,6 @@ if(isset($_REQUEST['type']) && $_REQUEST['type']=="synch"){
 	query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='version'");
 	$sqltbl['value']= (float)str_replace('1.','',$sqltbl['value']);
 	if(!isset($sqltbl['value']) || $sqltbl['value']<(float)str_replace('1.','',$version)){
-		query_bd("ALTER TABLE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` DROP `balance_ref`;");
 		query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='".$version."', `name`='version';");
 	}
 }
@@ -753,7 +752,7 @@ if($stop!=1){
           }
           if($checkhistory>=0){
 						delay_now();
-						query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` as t1, (SELECT `wallet`,`height`,`hash` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE (`wallet`,`height`,`hash`) IN (('".$request['wallet']."', '".$request['height']."', '".$request_sha."'))) as t2 SET t1.`recipient`= '".$recipient['wallet']."',t1.`money`= '".$request['money']."',t1.`nodawallet`= '".$nodawallet."',t1.`nodaown`= '".$nodaown."',t1.`signpubreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signpubreg']:'')."',t1.`signreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signreg']:'')."',t1.`signpubnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew']:'')."',t1.`signnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signnew']:'')."',t1.`signpub`= '".$request['signpub']."',t1.`sign`= '".$request['sign']."',t1.`checkhistory`= '".$checkhistory."' WHERE t2.`wallet`!='' and (t1.`wallet`,t1.`height`,t1.`hash`) IN ((t2.`wallet`,t2.`height`,t2.`hash`)) and t1.`sign`!= '".$request['sign']."' and t1.`date`= '".$datecheck."' and t1.`pin`= '".$request['pin']."' and t1.`nodause`= '".$nodause."';");
+						query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` SET `recipient`= '".$recipient['wallet']."',`money`= '".$request['money']."',`nodawallet`= '".$nodawallet."',`nodaown`= '".$nodaown."',`signpubreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signpubreg']:'')."',`signreg`= '".(isset($request['signpubreg']) && isset($request['signreg'])?$request['signreg']:'')."',`signpubnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew']:'')."',`signnew`= '".(isset($request['signpubnew']) && isset($request['signnew'])?$request['signnew']:'')."',`signpub`= '".$request['signpub']."',`sign`= '".$request['sign']."',`checkhistory`= '".$checkhistory."' WHERE `wallet` = (SELECT * FROM (SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$request['wallet']."' and `height`='".$request['height']."' and `hash`='".$request_sha."' LIMIT 1) as t) and `height`='".$request['height']."' and `hash`='".$request_sha."' and `sign`!= '".$request['sign']."' and `date`= '".$datecheck."' and `pin`= '".$request['pin']."' and `nodause`= '".$nodause."';");
 						if(mysqli_affected_rows($mysqli_connect)>=1){
 							delay_now();
 							if(isset($GLOBALS['filename_tmp_send']) && !file_exists($GLOBALS['filename_tmp_send']))file_put_contents($GLOBALS['filename_tmp_send'], "");
@@ -801,7 +800,8 @@ if($stop!=1){
           } else $json_arr['wallet']= 'false';
         } else $json_arr['sign']= 'false';
       }
-			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE (`wallet`,`height`,`hash`) IN (SELECT * FROM (SELECT `wallet`,`height`,`hash` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE (`wallet`,`height`,`hash`) IN (('".$request['wallet']."', '".$request['height']."', '".$request_sha."'))) as t) and `recipient`='';");
+			delay_now();
+			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet` = (SELECT * FROM (SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$request['wallet']."' and `height`='".$request['height']."' and `hash`='".$request_sha."' LIMIT 1) as t) and `height`='".$request['height']."' and `hash`='".$request_sha."' and `recipient`='';");
     }
     if(mysqli_affected_rows($mysqli_connect)>=1){}
   } 
@@ -894,7 +894,7 @@ if($stop!=1){
     else $synch_wallet=1;
     $noda_balance_rand= random($noda_balance,9);
     if($noda_balance_count>9){
-      $query= "SELECT `noda`, SUBSTRING_INDEX(GROUP_CONCAT(`balance` ORDER BY `date` DESC), ',', 1) as balance FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `view`>0 and `noda`!='' and `noda`!='".$noda_ip."' and `balance`>=".(int)$noda_balance_noda_ip."/2 ".($noda_balance_count>0?"and `noda` NOT IN ('".implode("','",array_keys($noda_balance_rand))."')":'')." GROUP BY `noda` LIMIT 16;";
+      $query= "SELECT `noda`, ANY_VALUE(SUBSTRING_INDEX(GROUP_CONCAT(`balance` ORDER BY `date` DESC), ',', 1)) as balance FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `view`>0 and `noda`!='' and `noda`!='".$noda_ip."' and `balance`>=".(int)$noda_balance_noda_ip."/2 ".($noda_balance_count>0?"and `noda` NOT IN ('".implode("','",array_keys($noda_balance_rand))."')":'')." GROUP BY `noda` LIMIT 16;";
       $result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_for_last");
       while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))$noda_balance_big[$sqltbl_arr['noda']]= $sqltbl_arr['balance'];
       if(isset($noda_balance_big)){
@@ -1172,10 +1172,10 @@ if($stop!=1 && $request['type']=="nodas"){
   if(isset($request['balancefinish'])) $where.= " and n1.`balance`<= '".$request['balancefinish']."'";
   if(isset($request['nodausewalletstart'])) $where.= " and n2.`walletsuse`>= '".$request['nodausewalletstart']."'";
   if(isset($request['nodausewalletfinish'])) $where.= " and n2.`walletsuse`<= '".$request['nodausewalletfinish']."'";
-  if(isset($request['order']) && $request['order']=='asc') $order= "n1.`date` ASC"; else if(isset($request['order']) && $request['order']=='balance') $order= "n1.`balance` DESC"; else $order= "n1.`date` DESC";
+  if(isset($request['order']) && $request['order']=='asc') $order= "ANY_VALUE(n1.`date`) ASC"; else if(isset($request['order']) && $request['order']=='balance') $order= "ANY_VALUE(n1.`balance`) DESC"; else $order= "ANY_VALUE(n1.`date`) DESC";
   if(isset($request['start']) && $request['start']>0) $start= $request['start'];else $start=0;
   if(isset($request['limit']) && $request['limit']>0 && $request['limit']<100) $limit= $request['limit'];else $limit=100;
-  $query= "SELECT n1.`noda`, n1.`wallet`, n1.`balance`, n2.walletsuse, n2.datelastuse FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` as n1 LEFT JOIN (SELECT `nodause`, COUNT(`nodause`) as walletsuse, MAX(`date`) as datelastuse FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` GROUP BY `nodause`) as n2 ON n2.`nodause`=n1.`noda` WHERE n1.`view`>0 and n1.`noda`!='' ".$where." GROUP BY n1.`noda` ORDER BY ".$order." LIMIT ".$start.",".$limit.";";
+  $query= "SELECT n1.`noda`, ANY_VALUE(n1.`wallet`) as wallet, ANY_VALUE(n1.`balance`) as balance, ANY_VALUE(n2.walletsuse) as walletsuse, ANY_VALUE(n2.datelastuse) as datelastuse FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` as n1 LEFT JOIN (SELECT `nodause`, COUNT(`nodause`) as walletsuse, MAX(`date`) as datelastuse FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` GROUP BY `nodause`) as n2 ON n2.`nodause`=n1.`noda` WHERE n1.`view`>0 and n1.`noda`!='' ".$where." GROUP BY n1.`noda` ORDER BY ".$order." LIMIT ".$start.",".$limit.";";
   $result= mysqli_query($mysqli_connect,$query) or die("error_nodas");
   while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))if($sqltbl_arr['noda'])$json_arr['nodas'][]= $sqltbl_arr;
   $stop=1;
@@ -1400,7 +1400,7 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 		if(!file_exists($GLOBALS['filename_tmp_synch']))file_put_contents($GLOBALS['filename_tmp_synch'], "");
 		$checkbalancenodatime=0;
 		$noda_balance_noda_ip=0;
-		$query= "SELECT `noda`, SUBSTRING_INDEX(GROUP_CONCAT(`balance` ORDER BY `date` DESC), ',', 1) as balance, MAX(`checknoda`) as checknoda FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `view`>0 and `noda`!='' and `checknoda`<= '".$json_arr['time']."' and `balance`>=100 GROUP BY `noda` ORDER BY `noda`='".$noda_ip."' DESC,`checknoda` LIMIT 33;";
+		$query= "SELECT `noda`, ANY_VALUE(SUBSTRING_INDEX(GROUP_CONCAT(`balance` ORDER BY `date` DESC), ',', 1)) as balance, MAX(`checknoda`) as checknoda FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `view`>0 and `noda`!='' and `checknoda`<= '".$json_arr['time']."' and `balance`>=100 GROUP BY `noda` ORDER BY ANY_VALUE(`noda`='".$noda_ip."') DESC,ANY_VALUE(`checknoda`) LIMIT 33;";
 		$result= mysqli_query($mysqli_connect,$query) or die("error_noda_synch_for_last");
 		while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
 			if($sqltbl_arr['noda']!=$noda_ip){
