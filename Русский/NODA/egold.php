@@ -1,5 +1,5 @@
 <?php
-$version= '1.21';
+$version= '1.22';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -799,9 +799,9 @@ if($stop!=1){
             } else $json_arr['transaction']= 'false';
           } else $json_arr['wallet']= 'false';
         } else $json_arr['sign']= 'false';
+				delay_now();
+				query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet` = (SELECT * FROM (SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$request['wallet']."' and `height`='".$request['height']."' and `hash`='".$request_sha."' and `recipient`='' LIMIT 1) as t) and `height`='".$request['height']."' and `hash`='".$request_sha."' and `recipient`='';");
       }
-			delay_now();
-			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet` = (SELECT * FROM (SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$request['wallet']."' and `height`='".$request['height']."' and `hash`='".$request_sha."' LIMIT 1) as t) and `height`='".$request['height']."' and `hash`='".$request_sha."' and `recipient`='';");
     }
     if(mysqli_affected_rows($mysqli_connect)>=1){}
   } 
@@ -1491,7 +1491,7 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 				query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
 				query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
 			}
-			query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='', `view`=IF(`view`=1,3,`view`) WHERE `noda`!='' and `date`< UNIX_TIMESTAMP()-30*24*60*60;");
+			query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='', `view`=IF(`view`=1,3,`view`) WHERE `noda`!='' and `noda` NOT IN (SELECT * FROM (SELECT `nodause` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `nodause`!='' and `date` > UNIX_TIMESTAMP()-30*24*60*60 GROUP BY `nodause`) as t);");
 			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `date`< UNIX_TIMESTAMP()-".$history_day."*24*60*60;");
 			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `date`< UNIX_TIMESTAMP()-".$history_day."*24*60*60;");
 			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `checkhistory`!=1 and `date`< UNIX_TIMESTAMP()-1*60*60;");
