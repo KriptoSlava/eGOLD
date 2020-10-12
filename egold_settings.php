@@ -44,7 +44,7 @@ $email_delay= 0.1;
 //Domain which can be used for addressing node for information is indicated with http or https, and this can be done via IP. Example: https://www.egold.pro
 //In any case, node operating requires IP address
 $noda_site= "";
-//$email_domain= "https://www.egold.pro";//Example
+//$noda_site= "https://www.egold.pro";//Example
 
 //Ddos protection in the form of node blocking in case the given amount of connections over 9 seconds is exceeded
 $ddos_protect= 1000;
