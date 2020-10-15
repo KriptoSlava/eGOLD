@@ -1,5 +1,5 @@
 <?php
-$version= '1.23';
+$version= '1.24';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -677,7 +677,7 @@ if($stop!=1){
     $request_sha_temp['nodaown']= $nodaown;
     $request_sha_temp['date']= $datecheck;
     $request_sha= gen_sha3(json_encode($request_sha_temp),64);
-    $sqltbl= query_bd("SELECT `height` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$request['wallet']."' and `height`= '".$request['height']."' and (`hash`= '".$request_sha."' or (`recipient`= '".$request['recipient']."' and `money`= '".$request['money']."' and `pin`= '".$request['pin']."' and `nodawallet`= '".$nodawallet."' and `nodause`= '".$nodause."' and `nodaown`= '".$nodaown."' and `date`= '".$datecheck."')) LIMIT 1;");
+    $sqltbl= query_bd("SELECT `height` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$request['wallet']."' and `height`= '".$request['height']."' and (`hash`= '".$request_sha."' or (`recipient`= '".$request['recipient']."' and `money`= '".$request['money']."' and `pin`= '".$request['pin']."' and `nodawallet`= '".$nodawallet."' and `nodause`= '".$nodause."' and `date`= '".$datecheck."')) LIMIT 1;");
     if(isset($sqltbl['height'])){
       $json_arr['height']= 'double0';
     } else {
@@ -686,7 +686,7 @@ if($stop!=1){
         $sqltbl= query_bd("SELECT `wallet`,`balance` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `noda`= '".$nodause."' ORDER BY `date` DESC LIMIT 1;");
         if(isset($sqltbl['wallet']) && $sqltbl['wallet']){
           $nodawallet=$sqltbl['wallet'];
-          if($sqltbl['balance']<100 || $nodawallet==$wallet['wallet'])$nodaown=1;
+          if($nodawallet==$wallet['wallet'])$nodaown=1;
           else $nodaown=0;
         }
         if($request['recipient']==1)$recipient['wallet']=1;
