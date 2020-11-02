@@ -1,5 +1,5 @@
 <?php
-$version= '1.24';
+$version= '1.25';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -8,7 +8,7 @@ if($error_log==1){
 	ini_set('error_reporting', E_ALL);
 	ini_set('display_errors', 0);
 	ini_set('log_errors','on');
-	ini_set('error_log', __DIR__ .'/egold_error.log');
+	ini_set('error_log', __DIR__ .'/../egold_error.log');
 }
 header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 function exit_now(){if(isset($mysqli_connect))mysqli_close($mysqli_connect);exit;}
