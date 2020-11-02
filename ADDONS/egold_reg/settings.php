@@ -1,4 +1,4 @@
-<?php
+<?php //version 1.1
 //All files of the supplement for automatic registration of wallets should be located in the folder /egold_reg/ of the website root and the file for node settings egold_settings.php with the folder /egold_crypto/ should be located in the website root
 //You can check the operation of the addon by running index.php file opening its URL in the address bar of the browser: http://[site]/egold_reg/index.php
 //To embed an automatic wallet registration form under your wallet in the site page, you need to tag the code from index.php so, that it is:
@@ -25,7 +25,7 @@ $wallets_more_one= 1;//If =0, then only one wallet for one email address, if =1 
 $period_reg= 24;//Interval in hours after which a wallet can be registered again, if $wallets_more_one= 1
 $period_pin= 10;//Interval I’m seconds after which you can request pin again for one and the same email and IP address.
 $period_ip= 24*60*60;//Interval in seconds in which  user can register a wallet for the same IP address again.
-$period_clean= 7;//Interval in days after which records with no registered wallets that requested sending pin codes to emails. Clearing of all records occurs if they are older than 7 days at requesting pin code by any reference to script.
+$period_clean= 7;//Interval in days after which records with no registered wallets that requested sending pin codes to emails. Clearing of all records occurs if they are older than specified quantity days at requesting pin code by any reference to script.
 
 /*
 //For database installation in MySQL console fulfill the request:
