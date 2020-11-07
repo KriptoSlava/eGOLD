@@ -23,9 +23,8 @@ if(isset($_SESSION['password']) && isset($_REQUEST['id_checked']) && $_REQUEST['
 				if(isset($GLOBALS['sqltbl']))return $GLOBALS['sqltbl'];
 			}
 			
-			if(isset($_REQUEST['checked_true']) && $_REQUEST['checked_true']==1){//отмечаем выполнение и фиксируем прибыли
-				
-				query_bd("UPDATE `eGOLDlightpurchase_log` SET `user`= '".$user."',`status`= 1,`course`= '".$_SESSION['course']."',`deposit`= `course`*`egold`,`profit_percent`= '".$profit_percent."',`profit`= `profit_percent`/100*`deposit`,`pay`= `deposit`-`profit`,`date_change`= NOW() WHERE `id`= '".$id_checked."';");
+			if(isset($_REQUEST['checked_true']) && ($_REQUEST['checked_true']==1 || $_REQUEST['checked_true']==2)){//отмечаем выполнение и фиксируем прибыли
+				query_bd("UPDATE `eGOLDlightpurchase_log` SET `user`= '".$user."',`status`= '".$_REQUEST['checked_true']."',`course`= '".$_SESSION['course']."',`deposit`= `course`*`egold`,`profit_percent`= '".$profit_percent."',`profit`= `profit_percent`/100*`deposit`,`pay`= `deposit`-`profit`,`date_change`= NOW() WHERE `id`= '".$id_checked."';");
 				if(mysqli_affected_rows($mysqli_connect)>=1)echo gmdate('Y.m.d H:i:s',time()+$offset*60*60);
 			} else {
 				if(in_array($user, $admin)){//снимаем отметку выполнения

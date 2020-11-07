@@ -24,7 +24,7 @@ else{
 
 if(!($logout>0)){
 	$mysqli_connect = mysqli_connect($host_db_lightpurchase,$database_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db");
-	$query= "SELECT * FROM `eGOLDlightpurchase_log` ORDER by `status` ASC,`id` DESC;";
+	$query= "SELECT * FROM `eGOLDlightpurchase_log` ORDER by `status`=0 DESC,`date_change` DESC,`id` DESC;";
 	$result_arr = mysqli_query($mysqli_connect,$query) or die("error_result_arr");
 	$count = mysqli_num_rows($result_arr);
 	
@@ -70,7 +70,8 @@ $csv_file= 'table_'.gmdate('Y.m.d_H.i.s',time()+$offset*60*60).'.csv';
 			<th><h3>Data</h3></th>
 			<th><h3>Changed</h3></th>
 			<th><h3>User</h3></th>
-			<th><h3>&#128505;</h3></th>
+			<th><h3>✖</h3></th>
+			<th><h3>✔</h3></th>								
 		</tr>
 	</thead>
 	<tbody>
@@ -111,7 +112,8 @@ while ($sqltbl_arr = mysqli_fetch_array($result_arr)) {
 		<td><b>".$sqltbl_arr['details']."</b></td>
 		<td>".$sqltbl_arr['date_change']."</td>
 		<td>".$sqltbl_arr['user']."</td>
-		<td><input class='status".($admin_true==1?' admin_true':'')."' id='checkbox_".$sqltbl_arr['id']."' type='checkbox' name='status' ".($sqltbl_arr['status']==1?'checked':'')." ".($admin_true!=1 && $sqltbl_arr['status']>0?'disabled':'')."></td>
+		<td><input class='status1".($admin_true==1?' admin_true':'')."' id='checkbox_".$sqltbl_arr['id']."_false' type='checkbox' name='status' ".($sqltbl_arr['status']==1?'checked':'')." ".($admin_true!=1 && $sqltbl_arr['status']>0?'disabled':'')."></td>
+		<td><input class='status2".($admin_true==1?' admin_true':'')."' id='checkbox_".$sqltbl_arr['id']."_true' type='checkbox' name='status' ".($sqltbl_arr['status']==2?'checked':'')." ".($admin_true!=1 && $sqltbl_arr['status']>0?'disabled':'')."></td>		
 	</tr>
 	";
 }
@@ -151,23 +153,29 @@ echo $table;
 
 <script>
 function status_click(){
-	$('.status').click(function functionName() {
+	$('.status1, .status2').click(function functionName() {
 		var element= $(this);
-		var checked_true= (element.prop('checked')== true?1:0);
+		var checked_true= (element.prop('checked')== true?(element.hasClass('status2')== true?2:1):0);
+		var id_checked= element.attr('id').replace(/[^0-9]/g, "");
 		$.ajax({
       async: true,
       url: "/egold_lightpurchase/checked.php",
       cache: false,
       type: "POST",
-      data: {id_checked: element.attr('id').replace(/[^0-9]/g, ""),checked_true: checked_true},
+      data: {id_checked: id_checked,checked_true: checked_true},
       success: function(data){
         if(data.length==19 && data.replace(/[^0-9]/g, "").length==14){
-					element.closest('tr').find('td:nth-last-child(3)').html(data);
-					element.closest('tr').find('td:nth-last-child(2)').html('<?= $user ?>');
-					<?= ($admin_true!=1?"if(element.prop('checked')== true)element.attr('disabled', '');":'') ?>
+					element.closest('tr').find('td:nth-last-child(4)').html(data);
+					element.closest('tr').find('td:nth-last-child(3)').html('<?= $user ?>');
+					
+					if(checked_true==1) $('#checkbox_'+id_checked+'_true').prop('checked', '');
+					else if(checked_true==2) $('#checkbox_'+id_checked+'_false').prop('checked', '');
+					<?= ($admin_true!=1?"if(element.prop('checked')== true){
+						$('checkbox_'+id_checked+'_false').attr('disabled', '');
+						$('checkbox_'+id_checked+'_true').attr('disabled', '');
+					}":'') ?>
         } else {
-					if(element.prop('checked')== true)element.removeAttr('checked');
-					else element.attr('checked', '');
+					window.location.reload();
 				}
       }
     });

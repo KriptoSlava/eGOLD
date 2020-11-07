@@ -1,10 +1,11 @@
-<?php //version 1.1
+<?php //version 1.2
 //All files of the supplement for automatic accepting incoming transactions should be located in the folder /egold_lightpurchase/ of the website root and the file for node settings egold_settings.php with the folder /egold_crypto/ should be located in the website root
 //You can check the operation of the addon by running index.php file opening its URL in the address bar of the browser: http://[site]/egold_lightpurchase/index.php
 //To embed an automatic wallet registration form under your wallet in the site page, you need to tag the code from index.php so, that it is:
 //1. <head><script src="/egold_lightpurchase/js/jquery-3.2.1.min.js"></script><style>[style code]</style></head>
 //2. <body>[html form and button code]</body>
 //3. <script>[code of each script in the same sequence]</script>
+//4. To periodically check transactions, you must add transactions.php to the cron of the form '/[folder path with php]/php ~/[folder path with egold.php]/egold_lightpurchase/transactions.php PDpMj4eBEDR54'(PDpMj4eBEDR54 is the password for updating the crown, which is set below in $cron_password and if it is not, then simply do not write) with a frequency of execution once every minute (the version of the PHP script execution in the crown must be from 7.1) You can also use http://[ip_address_nod]/egold_lightpurchase/transactions.php?cron_password=PDpMj4eBEDR54 (not recommended)
 
 $host_db_lightpurchase= "localhost"; //Database server address, in most cases localhost
 $database_db_lightpurchase= ""; //Database name
