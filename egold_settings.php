@@ -31,7 +31,8 @@ $noda_trust[]= "";
 //Amount of days for keeping transaction history and history of referrals’ assessments
 $history_day= 90;
 
-//In order to set automatic sending of notifications to emails according to transactions of users dealing with a certain node you should link your domain to hosting and specify it below, e.g. egold.pro. For proper email notification system operating, you need a domain not higher than of a second level. What is it and how to get it you may find on the Internet.
+//In order to set automatic sending of notifications to emails according to transactions of users dealing with a certain node you should link your domain to hosting and specify it below, e.g. egold.pro. Hosting should support php function mail(). For proper email notification system operating, you need a domain not higher than of a second level. What is it and how to get it you may find on the Internet.
+//To verify support for the mail() function, after the domain fits into the $email_domain parameter, make a request in the browser http://[ip_ address_nodes]/egold.php and if there is a parameter email_domain with your domain, then the function works.
 $email_domain= "";
 //$email_domain= "egold.pro";//Example
 
@@ -42,6 +43,7 @@ $email_limit= 10;
 $email_delay= 0.1;
 
 //Domain which can be used for addressing node for information is indicated with http or https, and this can be done via IP. Example: https://www.egold.pro
+//To check the configuration of your site on the node, after you fit the site into the $noda_site parameter, make a request in the browser [site from the $noda_site parameter]/egold.php and if there is a parameter noda_site with your site, then the site is added.
 //In any case, node operating requires IP address
 $noda_site= "";
 //$noda_site= "https://www.egold.pro";//Example

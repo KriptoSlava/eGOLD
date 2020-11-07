@@ -1,5 +1,5 @@
 <?php
-$version= '1.25';
+$version= '1.26';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -51,6 +51,7 @@ if(isset($_REQUEST['type']) && ($_REQUEST['type']=="send" || $_REQUEST['type']==
 	} else if(file_exists($filename_tmp_synch)){echo '{"synch":"now"}';exit_now();}
 }
 include __DIR__ .'/egold_settings.php';
+if($email_domain && !function_exists('mail')){$email_domain= '';}
 $limit_synch= 250;
 $percent_4= 1.0000000154321;
 $percent_5= 1.0000000192901;
