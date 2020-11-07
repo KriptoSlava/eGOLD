@@ -1,0 +1,10 @@
+{
+    "name": "alex/falcon",
+    "description": "Falcon crypto",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "markbaker/complex": "^1.4",
+        "lastguest/murmurhash": "^2.0"
+    }
+}
