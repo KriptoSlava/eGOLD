@@ -1,4 +1,4 @@
-<?php //version 1.1
+<?php //version 1.2
 //All files of the supplement for automatic registration of wallets should be located in the folder /egold_reg/ of the website root and the file for node settings egold_settings.php with the folder /egold_crypto/ should be located in the website root
 //You can check the operation of the addon by running index.php file opening its URL in the address bar of the browser: http://[site]/egold_reg/index.php
 //To embed an automatic wallet registration form under your wallet in the site page, you need to tag the code from index.php so, that it is:
@@ -15,8 +15,6 @@ $password_db_reg= ""; //Database password
 
 $email_domain= "";//Domain of the sender. Example: yandex.ru
 $page_reg= "";//Page of new wallet registration. Example: http://yandex.ru/registr_wallet
-$wallet_url= "";//Link for downloading wallet. Example: http://yandex.ru/egold_reg/eGOLD.zip
-$MD5= "";//MD5 Wallet archive signature which can be downloaded via the link $wallet_url. Example: 9B4295C6F475E50428C16CDD86A40139
 
 $wallet_egold_number= "";//Wallet number, only numbers. Example: 111122222333344444
 $wallet_egold_key= "";//Key. Example: 0707000f00f7fff9ff00000b001100ffff0a000 (about 2050 symbols)

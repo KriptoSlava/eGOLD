@@ -123,6 +123,15 @@ if(isset($request['email']) && isset($request['pin'])){
 				}
 				
 				if(isset($json_send['walletnew']) && strlen(preg_replace("/[^0-9]/i",'',$json_send['walletnew']))==18){
+					$archive= '';
+					foreach (glob(__DIR__ .'/../eGOLD_v*.zip') as $archive_tmp){
+						if(!$archive || $archive_tmp>$archive)$archive= $archive_tmp;
+					}
+					if(file_exists($archive)){
+						$MD5= strtoupper(hash_file('md5', $archive));
+						if($MD5) $wallet_url= 'http://'.$noda_ip.'/'.basename($archive);
+					}
+					
 					$wallet_new= $json_send['walletnew'];
 					query_bd("UPDATE `".$GLOBALS['database_db_reg']."`.`eGOLDreg` SET `wallet`='".$wallet_new."',`date`=NOW() WHERE `id`='".$id."';");
 					
@@ -130,9 +139,11 @@ if(isset($request['email']) && isset($request['pin'])){
 					$message= "Wallet number: <b>".$wallet_new."</b>
 				\r\n<br/>Private key: ".$falcon_k_reg."
 				\r\n<br/>
-				\r\n<br/>Download the wallet via the link: ".$GLOBALS['wallet_url']."
-				\r\n<br/>MD5 signature for archive verification: ".$GLOBALS['MD5']."
-				\r\n<br/><i>MD5 archive signature <b>MANDATORY</b> should be reconciled with other official sources! Find on the Internet how to check MD5.</i>
+				\r\n<br/>Download the wallet via the link: ".$wallet_url."
+				\r\n<br/>MD5 signature for archive verification: ".$MD5."
+				\r\n<br/>
+				\r\n<br/><i>* MD5 archive signature <b>MANDATORY</b> should be reconciled with other official sources! Find on the Internet how to check MD5.</i>
+				\r\n<br/>
 				\r\n<br/>Archive password: MD5
 				\r\n<br/>IP node address: ".$noda_ip."
 				\r\n<br/>
