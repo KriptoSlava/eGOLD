@@ -1,5 +1,5 @@
 <?php
-$version= '1.26';
+$version= '1.27';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -1441,7 +1441,7 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 		}
 		timer(9);
 		wallet_check();
-		if(isset($email_domain) && $email_domain && isset($email_limit) && (int)$email_limit>0 && isset($email_delay) && (float)$email_delay>0){
+		if(isset($email_domain) && function_exists('mail') && $email_domain && isset($email_limit) && (int)$email_limit>0 && isset($email_delay) && (float)$email_delay>0){
 			$query= "SELECT * FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` WHERE `nodatrue`=1 and `email`!='' ORDER BY `date` ASC;";
 			$result= mysqli_query($mysqli_connect,$query) or die("error_noty_check_user");
 			while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC)){
