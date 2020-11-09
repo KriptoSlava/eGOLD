@@ -123,6 +123,15 @@ if(isset($request['email']) && isset($request['pin'])){
 				}
 				
 				if(isset($json_send['walletnew']) && strlen(preg_replace("/[^0-9]/i",'',$json_send['walletnew']))==18){
+					$archive= '';
+					foreach (glob(__DIR__ .'/../eGOLD_v*.zip') as $archive_tmp){
+						if(!$archive || $archive_tmp>$archive)$archive= $archive_tmp;
+					}
+					if(file_exists($archive)){
+						$MD5= strtoupper(hash_file('md5', $archive));
+						if($MD5) $wallet_url= 'http://'.$noda_ip.'/'.basename($archive);
+					}
+
 					$wallet_new= $json_send['walletnew'];
 					query_bd("UPDATE `".$GLOBALS['database_db_reg']."`.`eGOLDreg` SET `wallet`='".$wallet_new."',`date`=NOW() WHERE `id`='".$id."';");
 					
@@ -130,9 +139,11 @@ if(isset($request['email']) && isset($request['pin'])){
 					$message= "Номер кошелька: <b>".$wallet_new."</b>
 				\r\n<br/>Закрытый ключ: ".$falcon_k_reg."
 				\r\n<br/>
-				\r\n<br/>Скачать кошелёк можно по этой ссылке: ".$GLOBALS['wallet_url']."
-				\r\n<br/>MD5 подпись для проверки архива: ".$GLOBALS['MD5']."
-				\r\n<br/><i>MD5 подпись архива <b>ОБЯЗАТЕЛЬНО</b> необходимо сверить с другими официальными источниками! Как проверить MD5, можно найти в интернете.</i>
+				\r\n<br/>Скачать кошелёк можно по этой ссылке: ".$wallet_url."
+				\r\n<br/>MD5 подпись для проверки архива: ".$MD5."
+				\r\n<br/>
+				\r\n<br/><i>* MD5 подпись архива <b>ОБЯЗАТЕЛЬНО</b> необходимо сверить с другими официальными источниками! Как проверить MD5, можно найти в интернете.</i>
+				\r\n<br/>
 				\r\n<br/>Пароль на архив: MD5
 				\r\n<br/>IP адрес ноды: ".$noda_ip."
 				\r\n<br/>

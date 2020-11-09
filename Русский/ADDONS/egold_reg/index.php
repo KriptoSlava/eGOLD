@@ -45,49 +45,61 @@ $('.egold_pin').on('keyup', function() {
 });
 
 $('#egold_button_send_pin').on('click', function() {
-	$('#egold_sms').html('');
-	$('#egold_reg_email').hide();
-	$.getJSON( "/egold_reg/egold_reg.php", { email: $('.egold_email').val()} )
-	.done(function(json1) {
-		if(json1.send=='pin'){
-			$('#egold_sms').html("Пинкод отправлен на почту");
-			$('#egold_reg_email').hide();
-			$('#egold_reg_pin').fadeIn();
-		}else if(json1.error=="limit_reg")$('#egold_sms').html("Действует ограничение на количество регистраций для одной почты");
-		else if(json1.error=="send_pin")$('#egold_sms').html("Не удалось отправить пинкод");
-		else if(json1.error=="limit_pin")$('#egold_sms').html("Действует ограничение на период между запросами на пинкод для одной почты и одного IP");
-		else if(json1.error=="email")$('#egold_sms').html("Неправильная почта");
-		else $('#egold_sms').html(json1.error);
-		if(json1.error)$('#egold_reg_email').fadeIn();
-	})
-	.fail(function() {
+	if($('.egold_email').val().length>=8){
+		$('#egold_sms').html('');
+		$('#egold_reg_email').hide();
+		$.getJSON( "/egold_reg/egold_reg.php", { email: $('.egold_email').val()} )
+		.done(function(json1) {
+			if(json1.send=='pin'){
+				$('#egold_sms').html("Пинкод отправлен на почту");
+				$('.egold_pin').val('');
+				$('#egold_reg_email').hide();
+				$('#egold_reg_pin').fadeIn();
+			}else if(json1.error=="limit_reg")$('#egold_sms').html("Действует ограничение на количество регистраций для одной почты");
+			else if(json1.error=="send_pin")$('#egold_sms').html("Не удалось отправить пинкод");
+			else if(json1.error=="limit_pin")$('#egold_sms').html("Действует ограничение на период между запросами на пинкод для одной почты и одного IP");
+			else if(json1.error=="email")$('#egold_sms').html("Неправильная почта");
+			else $('#egold_sms').html(json1.error);
+			if(json1.error)$('#egold_reg_email').fadeIn();
+		})
+		.fail(function() {
+			$('#egold_reg_email').fadeIn();
+			$('#egold_sms').html("Не удалось подключиться к серверу. Попробуйте ещё раз.");
+		});
+	}else {
 		$('#egold_reg_email').fadeIn();
-		$('#egold_sms').html("Не удалось подключиться к серверу. Попробуйте ещё раз.");
-  });
+		$('#egold_sms').html("Заполните почту");
+	}
 });
 
 $('#egold_button_reg').on('click', function() {
-	$('#egold_reg_pin').hide();
-	$('#egold_sms').html('Генерируется кошелёк...');
-	$.getJSON( "/egold_reg/egold_reg.php", { email: $('.egold_email').val(), pin: $('.egold_pin').val()} )
-	.done(function(json1) {
-		if(json1.send=='wallet'){
-			$('#egold_sms').html("Кошелёк зарегистрирован и его реквизиты отправлены на почту");
-			$('#egold_reg_pin').hide();
-			$('#egold_reg_email').fadeIn();
-		} else if(json1.error=="pin")$('#egold_sms').html("Неправильно указан пинкод");
-		else if(json1.error=="wallet_egold_number")$('#egold_sms').html("В ноде не найден кошелёк с которого будем регистрировать новый");
-		else if(json1.error=="wallet_new")$('#egold_sms').html("Ошибка при генерации нового кошелька");
-		else if(json1.error=="send_wallet")$('#egold_sms').html("Не удалось отправить кошелёк на почту");
-		else if(json1.error=="limit_ip")$('#egold_sms').html("Действует ограничение на период между запросами регистрации кошелька для одного IP");
-		else if(json1.error=="email")$('#egold_sms').html("Неправильная почта");
-		else $('#egold_sms').html(json1.error);
-		if(json1.error)$('#egold_reg_pin').fadeIn();
-	})
-	.fail(function() {
+	if($('.egold_pin').val().length==9){
+		$('#egold_reg_pin').hide();
+		$('#egold_sms').html('Генерируется кошелёк...');
+		$.getJSON( "/egold_reg/egold_reg.php", { email: $('.egold_email').val(), pin: $('.egold_pin').val()} )
+		.done(function(json1) {
+			if(json1.send=='wallet'){
+				$('#egold_sms').html("Кошелёк зарегистрирован и его реквизиты отправлены на почту");
+				$('#egold_reg_pin').hide();
+				$('#egold_reg_email').fadeIn();
+			} else if(json1.error=="pin")$('#egold_sms').html("Неправильно указан пинкод");
+			else if(json1.error=="wallet_egold_number")$('#egold_sms').html("В ноде не найден кошелёк с которого будем регистрировать новый");
+			else if(json1.error=="wallet_new")$('#egold_sms').html("Ошибка при генерации нового кошелька");
+			else if(json1.error=="send_wallet")$('#egold_sms').html("Не удалось отправить кошелёк на почту");
+			else if(json1.error=="limit_ip")$('#egold_sms').html("Действует ограничение на период между запросами регистрации кошелька для одного IP");
+			else if(json1.error=="limit_pin")$('#egold_sms').html("Действует ограничение на период между запросами на пинкод для одной почты и одного IP");
+			else if(json1.error=="email")$('#egold_sms').html("Неправильная почта");
+			else $('#egold_sms').html(json1.error);
+			if(json1.error)$('#egold_reg_pin').fadeIn();
+		})
+		.fail(function() {
+			$('#egold_reg_pin').fadeIn();
+			$('#egold_sms').html("Не удалось подключиться к серверу. Попробуйте ещё раз.");
+		});
+	}else {
 		$('#egold_reg_pin').fadeIn();
-		$('#egold_sms').html("Не удалось подключиться к серверу. Попробуйте ещё раз.");
-  });
+		$('#egold_sms').html("Заполните пинкод");
+	}
 });
 
 $('#egold_button_reg_cancel').on('click', function() {

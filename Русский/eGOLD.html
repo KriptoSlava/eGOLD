@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eGOLD R1.26</title>
+  <title>eGOLD R1.27</title>
   <script>
     !function(e,t){if("function"==typeof define&&define.amd)define(["module","exports"],t);else if("undefined"!=typeof exports)t(module,exports);else{var n={exports:{}};t(n,n.exports),e.autosize=n.exports}}(this,function(e,t){"use strict";var n,o,p="function"==typeof Map?new Map:(n=[],o=[],{has:function(e){return-1<n.indexOf(e)},get:function(e){return o[n.indexOf(e)]},set:function(e,t){-1===n.indexOf(e)&&(n.push(e),o.push(t))},delete:function(e){var t=n.indexOf(e);-1<t&&(n.splice(t,1),o.splice(t,1))}}),c=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){c=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(r){if(r&&r.nodeName&&"TEXTAREA"===r.nodeName&&!p.has(r)){var e,n=null,o=null,i=null,d=function(){r.clientWidth!==o&&a()},l=function(t){window.removeEventListener("resize",d,!1),r.removeEventListener("input",a,!1),r.removeEventListener("keyup",a,!1),r.removeEventListener("autosize:destroy",l,!1),r.removeEventListener("autosize:update",a,!1),Object.keys(t).forEach(function(e){r.style[e]=t[e]}),p.delete(r)}.bind(r,{height:r.style.height,resize:r.style.resize,overflowY:r.style.overflowY,overflowX:r.style.overflowX,wordWrap:r.style.wordWrap});r.addEventListener("autosize:destroy",l,!1),"onpropertychange"in r&&"oninput"in r&&r.addEventListener("keyup",a,!1),window.addEventListener("resize",d,!1),r.addEventListener("input",a,!1),r.addEventListener("autosize:update",a,!1),r.style.overflowX="hidden",r.style.wordWrap="break-word",p.set(r,{destroy:l,update:a}),"vertical"===(e=window.getComputedStyle(r,null)).resize?r.style.resize="none":"both"===e.resize&&(r.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),a()}function s(e){var t=r.style.width;r.style.width="0px",r.offsetWidth,r.style.width=t,r.style.overflowY=e}function u(){if(0!==r.scrollHeight){var e=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&t.push({node:e.parentNode,scrollTop:e.parentNode.scrollTop}),e=e.parentNode;return t}(r),t=document.documentElement&&document.documentElement.scrollTop;r.style.height="",r.style.height=r.scrollHeight+n+"px",o=r.clientWidth,e.forEach(function(e){e.node.scrollTop=e.scrollTop}),t&&(document.documentElement.scrollTop=t)}}function a(){u();var e=Math.round(parseFloat(r.style.height)),t=window.getComputedStyle(r,null),n="content-box"===t.boxSizing?Math.round(parseFloat(t.height)):r.offsetHeight;if(n<e?"hidden"===t.overflowY&&(s("scroll"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight):"hidden"!==t.overflowY&&(s("hidden"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight),i!==n){i=n;var o=c("autosize:resized");try{r.dispatchEvent(o)}catch(e){}}}}function i(e){var t=p.get(e);t&&t.destroy()}function d(e){var t=p.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return r(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],d),e}),t.default=l,e.exports=t.default});
     <!-- Копирование в буфер обмена -->
@@ -6214,7 +6214,7 @@ body {
 .footer-page-referral .footer-transaction-control .transaction-Datepicker,
 .footer-transactions .footer-referral-control .transaction-Datepicker,
 .footer-transactions .footer-transaction-control .transaction-Datepicker {
-  max-width: 240px;
+  max-width: 200px;
   min-width: 140px
 }
 .footer-page-referral .footer-referral-control .transaction-Datepicker input,
@@ -6227,7 +6227,7 @@ body {
 .footer-page-referral .footer-transaction-control .referral-Datepicker,
 .footer-transactions .footer-referral-control .referral-Datepicker,
 .footer-transactions .footer-transaction-control .referral-Datepicker {
-  max-width: 240px;
+  max-width: 200px;
   min-width: 140px
 }
 .footer-page-referral .footer-referral-control .referral-Datepicker input,
@@ -8320,6 +8320,15 @@ div[contenteditable='true']:before {
 				<div class="gmt">
 					<span>GMT 0</span>
 				</div>
+				<button class="btn-percent" title="">
+          <svg class="referrals">
+            <use xlink:href="#icon_referrals" />
+          </svg>
+          <p class="amount">+ 0 G</p>
+          <svg class="send">
+            <use xlink:href="#send_icon_only" />
+          </svg>
+        </button>
 				<div class="footer-referral-control">
 					<div class="amount-rows">
 						0
@@ -10457,7 +10466,7 @@ function page_transactions(interval){
 								$('.page-transactions .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='pin' style='color: "+st+";'><svg class='icon small_pin mr-8'><use xlink:href='#small_pin'></use></svg><p>"+((json_transactions[i].pin == 0) ? '-' : json_transactions[i].pin)+"</p></div><div class='amount pay_money' style='color: "+st+";'><svg class='icon small_coin mr-8'><use xlink:href='#small_coin'></use></svg><p>- "+number_format(parseInt(json_transactions[i].money)+2, 0, '.', ' ')+"</p></div><div class='status rotate-up'><svg class='icon'><use xlink:href='#status-arrow'></use></svg></div></div>";
 							}
 						}
-						$('.page-transactions .amount-rows')[0].innerText = json_transactions.length == undefined ? 0 : json_transactions.length-1;
+						$('.page-transactions .amount-rows')[0].innerText = json_transactions.length == undefined ? 0 : (json_transactions.length-1)+' | '+number_format(json_transactions[json_transactions.length-1], 0, '.', ' ');
 						$('.page-transactions .pin p').click(function(target) {
 							pin= target.currentTarget.innerText.trim();
 							pin= (pin!='-' && pin!=0?pin:'');
@@ -10554,10 +10563,10 @@ function page_referral(interval){
 				else{
 					//кнопка зачисления поступления от рефералов
 					if(typeof(json_typewallet.percent_ref)!= "undefined" && json_typewallet.percent_ref>0 && typeof(json_typewallet.balancetransactioncheck)== "undefined" && !json_typewallet.balancetransactioncheck){
-						$(".btn-percent .amount").html('+ '+number_format(parseInt(json_typewallet.percent_ref), 0, '.', ' ')+' G');
-						$(".btn-percent").css('display','flex');
-						$(".btn-percent").show();
-					} else $(".btn-percent").hide();
+						$(".page-referral .btn-percent .amount").html('+ '+number_format(parseInt(json_typewallet.percent_ref), 0, '.', ' ')+' G');
+						$(".page-referral .btn-percent").css('display','flex');
+						$(".page-referral .btn-percent").show();
+					} else $(".page-referral .btn-percent").hide();
 					$('.page-referral .block-list').empty();
 					//количество страниц
 					if(!(json_referral.length>0))$('.page-referral .amount-rows')[0].innerText= 0;
@@ -10615,7 +10624,7 @@ function page_referral(interval){
 							var p= $('.page-referral .block-list')[0].innerHTML;
 							$('.page-referral .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='amount' style='color: "+st+";'><svg class='icon small_coin mr-8'><use xlink:href='#small_coin'></use></svg><p>+ "+number_format(money, 0, '.', ' ')+"</p></div><div class='status'><svg class='icon'><use xlink:href='"+icon+"'></use></svg></div></div>";
 						}
-						$('.page-referral .amount-rows')[0].innerText = json_referral.length == undefined ? 0 : json_referral.length-1; 
+						$('.page-referral .amount-rows')[0].innerText = json_referral.length == undefined ? 0 : (json_referral.length-1)+' | '+number_format(json_referral[json_referral.length-1], 0, '.', ' ');
 						$('.page-referral .dateO p').click(function(target) {
 							$('.page-referral .dateSort2').val(target.currentTarget.innerText.trim())
 						})
@@ -10722,7 +10731,7 @@ function page_referral_new(interval){
 						if(typeof(localStorage.getItem('eGOLD_password'))!= undefined && typeof(localStorage.getItem('eGOLD_contacts'))!= undefined && localStorage.getItem('eGOLD_password') && localStorage.getItem('eGOLD_contacts')){
 							json_contacts= JSON.parse(localStorage.getItem('eGOLD_contacts'));
 						}
-						for(var i=0;i<(json_referral.length-1) && typeof(json_referral[i].date)!= "undefined";i++) {
+						for(var i=0,sum=0,max=0,wallet_max='';i<(json_referral.length-1) && typeof(json_referral[i].date)!= "undefined";i++) {
 							wallet_to_arr_name= '';
 							new_transaction = 'black';
 							st= '#7b7b7b';
@@ -10770,8 +10779,21 @@ function page_referral_new(interval){
 							if(!wallet_to_arr_name)wallet_to_arr_name=wallet_to_arr;
 							var p= $('.page-referral-new .block-list')[0].innerHTML;
 							$('.page-referral-new .block-list')[0].innerHTML= p + "<div class='row "+new_transaction+"'><div class='date dateO' style='color: "+st+";'><p>"+date_to+"</p></div><div class='wallet' style='color: "+st+";'><p wallet='"+wallet_to_arr+"'>"+wallet_to_arr_name+"</p></div><div class='balance' style='color: "+st+";'><svg class='icon small_coin mr-8'><use xlink:href='#icon_new_wallet_g'></use></svg><p>"+number_format((refbalance+balance_percent), 0, '.', ' ')+"</p></div><div class='amount' style='color: "+st+";'><svg class='icon small_coin mr-8'><use xlink:href='#small_coin'></use></svg><p>+ "+number_format(money, 0, '.', ' ')+"</p></div><div class='status'><svg class='icon'><use xlink:href='"+icon+"'></use></svg></div></div>";
+							if(money>0 && money>max){
+								wallet_max= wallet_to_arr_name;
+								max=money;
+							}
+							sum+= money;
 						}
-						$('.page-referral-new .amount-rows')[0].innerText = json_referral.length == undefined ? 0 : json_referral.length-1; 
+						//кнопка зачисления поступления от реферала
+						if(max>0){
+							$(".page-referral-new .btn-percent .amount").html('+ '+number_format(parseInt(max), 0, '.', ' ')+' | '+number_format(parseInt(sum), 0, '.', ' ')+' G');
+							$(".page-referral-new .btn-percent").attr('wallet_max',wallet_max);
+							$(".page-referral-new .btn-percent").attr('title','Зачислить '+number_format(parseInt(max), 0, '.', ' ')+' G от кошелька '+wallet_max+' из '+number_format(parseInt(sum), 0, '.', ' ')+' G доступных на странице');
+							$(".page-referral-new .btn-percent").css('display','flex');
+							$(".page-referral-new .btn-percent").show();
+						} else $(".page-referral-new .btn-percent").hide();
+						$('.page-referral-new .amount-rows')[0].innerText = json_referral.length == undefined ? 0 : (json_referral.length-1)+' | '+number_format(json_referral[json_referral.length-1], 0, '.', ' ');
 						$('.page-referral-new .dateO p').click(function(target) {
 							$('.page-referral-new .dateSort2').val(target.currentTarget.innerText.trim())
 						})
@@ -11266,14 +11288,34 @@ $('.send-key-change').click(function(){
 		}
 	},1000);
 })
-//кнопка зачисления реферальных поступлений
-$('.btn-percent').click(function(){
+//кнопка зачисления реферальных поступлений на странице транзакций рефералов
+$('.page-referral .btn-percent').click(function(){
 	trueInput('.money p');
 	trueInput('.wallet_to');
 	trueInput('.amout_to');
 	trueInput('.secret_to');
 	trueInput('.pin_to');
 	$('.wallet_to').val('G-1___-_____-____-_____');
+	$('.amout_to').val('1');
+	$('.secret_to').val('');
+  $('.pin_to').val('');
+	$('.secret-key').removeClass("show").removeClass("anim-show").addClass("hide");
+  $('.block-input').removeClass("hide").addClass("show").addClass("anim-show");
+	nowInput('.wallet_to');
+	nowInput('.amout_to');
+	$("body,html").animate({
+		scrollTop:0
+	}, 1000);
+	return false;
+})
+//кнопка зачисления реферальных поступлений на странице рефералов
+$('.page-referral-new .btn-percent').click(function(){
+	trueInput('.money p');
+	trueInput('.wallet_to');
+	trueInput('.amout_to');
+	trueInput('.secret_to');
+	trueInput('.pin_to');
+	$('.wallet_to').val($('.page-referral-new .btn-percent').attr('wallet_max'));
 	$('.amout_to').val('1');
 	$('.secret_to').val('');
   $('.pin_to').val('');
