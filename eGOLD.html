@@ -11514,7 +11514,7 @@ setInterval(function () {
 				} else $('.info .noda').hide();
 				if(typeof(json_typewallet.noda_site)!= "undefined" && json_typewallet.noda_site){
 					if($('.nodaInput .icon-www').hasClass('hide'))$('.nodaInput .icon-www').removeClass('hide');
-					if($('.nodaInput .icon-www').attr('link')!=json_typewallet.noda_site)$('.nodaInput .icon-www').attr('link',json_typewallet.noda_site).attr('title','Открыть сайт ноды: '+json_typewallet.noda_site);
+					if($('.nodaInput .icon-www').attr('link')!=json_typewallet.noda_site)$('.nodaInput .icon-www').attr('link',json_typewallet.noda_site).attr('title','Open Node Site: '+json_typewallet.noda_site);
 				}else $('.nodaInput .icon-www').addClass('hide').attr('link','').attr('title','');
 				if(typeof(localStorage.getItem('eGOLD_password'))!= undefined && localStorage.getItem('eGOLD_password')){
 					if(typeof(json_typewallet.usersemailup)!= "undefined" && typeof(json_typewallet.usersemaildown)!= "undefined" && typeof(json_typewallet.email_domain)!= "undefined"){
