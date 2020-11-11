@@ -1,5 +1,5 @@
 <?php
-$version= '1.27';
+$version= '1.28';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -437,7 +437,10 @@ if(isset($sqltbl['now']) && $sqltbl['now']){
     if(isset($sqltbl['date']) && $sqltbl['date'])$json_arr['datelasttransaction']= $sqltbl['date'];
     else $json_arr['datelasttransaction']= 0;
   }
-  if(($stop==1 || $request['type']=="wallet") && isset($email_domain) && $email_domain)$json_arr['email_domain']= $email_domain;
+  if(($stop==1 || $request['type']=="wallet")){
+		if(isset($email_domain) && $email_domain)$json_arr['email_domain']= $email_domain;
+		if(isset($noda_site) && $noda_site)$json_arr['noda_site']= $noda_site;
+	}
   if($stop==1 && isset($noda_site) && $noda_site)$json_arr['noda_site']= $noda_site;
 } else {echo '{"error":"time"}';exit_now();}
 if((isset($request['type']) && $request['type']=="synch") || (isset($request['nodause']) && isset($request['date']) && isset($request['nodawallet'])))$json_arr['send_noda']= 1;
