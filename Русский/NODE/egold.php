@@ -1,5 +1,5 @@
 <?php
-$version= '1.28';
+$version= '1.29';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -10,7 +10,9 @@ if($error_log==1){
 	ini_set('log_errors','on');
 	ini_set('error_log', __DIR__ .'/../egold_error.log');
 }
-header('Content-type: text/html/json');header('Access-Control-Allow-Origin: *');header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 function exit_now(){if(isset($mysqli_connect))mysqli_close($mysqli_connect);exit;}
 if((float)phpversion()<7.1){echo '{"message": "PHP version minimum 7.1, but your PHP: '.phpversion().'"}';exit_now();}
 if(!extension_loaded('bcmath')){echo '{"message": "Require to install BCMATH"}';exit_now();}
