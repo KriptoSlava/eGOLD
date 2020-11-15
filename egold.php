@@ -1,5 +1,5 @@
 <?php
-$version= '1.29';
+$version= '1.30';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -418,8 +418,9 @@ if(isset($sqltbl['now']) && $sqltbl['now']){
 				$timepercent= $time-$wallet_return['date'];
         if($timepercent>0){
 					if($timepercent>315360000)$timepercent= 315360000;
-          $wallet_return['percent_4']= (int)($wallet_return['balance']*(POW($GLOBALS['percent_4'],$timepercent)-1));
-          $wallet_return['percent_5']= (int)($wallet_return['balance']*(POW($GLOBALS['percent_5'],$timepercent)-1));
+					$balance_tmp= $wallet_return['balance']+$wallet_return['balancecheck'];
+          $wallet_return['percent_4']= (int)($balance_tmp*(POW($GLOBALS['percent_4'],$timepercent)-1));
+          $wallet_return['percent_5']= (int)($balance_tmp*(POW($GLOBALS['percent_5'],$timepercent)-1));
         } else {
           $wallet_return['percent_4']=0;
           $wallet_return['percent_5']=0;
@@ -1535,7 +1536,7 @@ if($stop!=1 && $request['type']=="send" && isset($request['wallet']) && isset($r
     $wallet= wallet($request['wallet'],(isset($request['date'])?$request['date']:$json_arr['time']),0);
     if(!isset($wallet['wallet']))$json_arr['wallet']= 'false';
     else if($wallet['height']>=$request['height'])$json_arr['height']= 'false';
-    else if($json_arr['send_noda']!=1 && $wallet['balance']+($noda_wallet==$wallet['wallet']?$wallet['percent_5']:$wallet['percent_4'])< $request['money']+2)$json_arr['balance']= 'false';
+    else if($json_arr['send_noda']!=1 && $wallet['balance']+$wallet['percent_4']< $request['money']+2)$json_arr['balance']= $wallet['balance']+$wallet['percent_4'];
     else if($wallet['view']==0 || ($wallet['view']==2 && $json_arr['send_noda']!=1))$json_arr['wallet']= 'synch';
     else{
 			if($request['wallet']!=$noda_wallet){
