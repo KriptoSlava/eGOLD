@@ -69,6 +69,12 @@ if(isset($request['email']) && isset($request['pin'])){
 			$result= mysqli_query($mysqli_connect_egold,$query) or die("error_egold_wallets");
 			$sqltbl = mysqli_fetch_assoc($result);
 			if(isset($sqltbl['height'])){
+				$wallet_height= $sqltbl['height'];
+				$query= "SELECT `height` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$GLOBALS['wallet_egold_number']."' and `checkhistory`=0 and `height`>'".$wallet_height."' ORDER BY `height` DESC,`date` DESC LIMIT 1;";
+				$result = mysqli_query($mysqli_connect_egold,$query) or die("error_egold_wallets3");
+				$sqltbl = mysqli_fetch_assoc($result);
+				if(isset($sqltbl['height']))$wallet_height= $sqltbl['height'];
+				$wallet_height +=1;
 				include  __DIR__ .'/../egold_crypto/falcon.php';
 				//Генератор случайных паролей
 				$chars="qazxswedcvfrtgbnhyujmkiop1234567890QAZXSWEDCVFRTGBNHYUJMKOLP";//Символы, которые будут использоваться в пароле
@@ -79,7 +85,6 @@ if(isset($request['email']) && isset($request['pin'])){
 				while($max--)$newpassword.=$chars[rand(0,$size)];//Создаём пароль
 				list($falcon_k_reg,$falcon_p_reg)= Falcon\createKeyPair(128, uniqid().uniqid().uniqid().uniqid().uniqid().$newpassword);
 				//Конец генерации пары ключей
-				$wallet_height= $sqltbl['height']+1;
 				function bchexdec($hex){//Длинные числа
 					$dec = 0; $len = strlen($hex);
 					for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
@@ -88,7 +93,7 @@ if(isset($request['email']) && isset($request['pin'])){
 				function sha_dec($str){return substr(bchexdec(gen_sha3($str,19)),0,19);}//Генерация хеша из 19 чисел
 				$str_s_reg='30'.sha_dec($falcon_p_reg);
 				$falcon_s_reg= Falcon\sign($falcon_k_reg, $str_s_reg);
-				$str_s= $GLOBALS['wallet_egold_number'].'00'.'3'.'0'.$wallet_height.$noda_ip.$falcon_p_reg.$falcon_s_reg;
+				$str_s= $GLOBALS['wallet_egold_number'].'00'.'1'.'0'.$wallet_height.$noda_ip.$falcon_p_reg.$falcon_s_reg;
 				$falcon_s= Falcon\sign($GLOBALS['wallet_egold_key'], $str_s);
 				$falcon_p= Falcon\createPublicKey($GLOBALS['wallet_egold_key']);
 				
@@ -111,7 +116,7 @@ if(isset($request['email']) && isset($request['pin'])){
 						'type' => 'send',
 						'wallet' => $GLOBALS['wallet_egold_number'],
 						'recipient' => '00',
-						'money' => '3',
+						'money' => '1',
 						'pin' => '0',
 						'height' => $wallet_height,
 						'signpubreg' => $falcon_p_reg,
@@ -147,9 +152,9 @@ if(isset($request['email']) && isset($request['pin'])){
 				\r\n<br/>Пароль на архив: MD5
 				\r\n<br/>IP адрес ноды: ".$noda_ip."
 				\r\n<br/>
-				\r\n<br/><i>* Кошелёк станет доступен через 10 минут. Сам файл кошелька в архиве - это только файл <b>eGOLD.html</b>. Он автономный и его можно перенести из архива в любое место.</i>
+				\r\n<br/><i>* Кошелёк станет доступен через 3 минуы. Сам файл кошелька в архиве - это только файл <b>eGOLD.html</b>. Он автономный и его можно перенести из архива в любое место.</i>
 				\r\n<br/>
-				\r\n<br/><b>1.</b> Необходимо изменить закрытый ключ и только потом принимать транзакции на кошелёк и использовать его в других целях.
+				\r\n<br/><b>1.</b> Необходимо пополнить кошелёк до 3 монет, изменить закрытый ключ и только потом принимать транзакции на кошелёк и использовать его в других целях.
 				\r\n<br/><b>2.</b> До момента смены закрытого ключа, кошелёк считается небезопасным.
 				\r\n<br/><b>3.</b> В любом случае, ".$GLOBALS['email_domain']." только регистрирует новый кошелёк, а вся ответственность за его использование полностью лежит на Вас.
 				\r\n<br/>

@@ -23,7 +23,7 @@ if(!$host_ip){
 	exit;
 }
 
-$mysqli_connect = mysqli_connect($host_db_lightpurchase,$database_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db");
+$mysqli_connect = mysqli_connect($host_db_lightpurchase,$user_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db");
 function query_bd($query){
   global $mysqli_connect,$sqltbl;
   $GLOBALS['sqltbl']='';

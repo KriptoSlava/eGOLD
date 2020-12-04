@@ -23,7 +23,7 @@ else{
 }
 
 if(!($logout>0)){
-	$mysqli_connect = mysqli_connect($host_db_lightpurchase,$database_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db");
+	$mysqli_connect = mysqli_connect($host_db_lightpurchase,$user_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db");
 	$query= "SELECT * FROM `eGOLDlightpurchase_log` ORDER by `status`=0 DESC,`date_change` DESC,`id` DESC;";
 	$result_arr = mysqli_query($mysqli_connect,$query) or die("error_result_arr");
 	$count = mysqli_num_rows($result_arr);
@@ -32,7 +32,7 @@ if(!($logout>0)){
 	else $admin_true=0;
 } else unset($_SESSION['password']);
 
-$csv_file= 'table_'.gmdate('Y.m.d_H.i.s',time()+$offset*60*60).'.csv';
+$csv_file= 'table_'.date('Y.m.d_H.i.s',time()).'.csv';
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
@@ -92,8 +92,8 @@ while ($sqltbl_arr = mysqli_fetch_array($result_arr)) {
 	$sqltbl_arr['profit_percent']= floatval($sqltbl_arr['profit_percent']>0?$sqltbl_arr['profit_percent']:$profit_percent);
 	$sqltbl_arr['profit']= floatval($sqltbl_arr['profit']>0?$sqltbl_arr['profit']:$sqltbl_arr['profit_percent']/100*$sqltbl_arr['deposit']);
 	$sqltbl_arr['pay']= floatval($sqltbl_arr['pay']>0?$sqltbl_arr['pay']:$sqltbl_arr['deposit']-$sqltbl_arr['profit']);
-	$sqltbl_arr['date']= gmdate('Y.m.d H:i:s',strtotime($sqltbl_arr['date'])+$offset*60*60);
-	$sqltbl_arr['date_change']= ((int)(substr($sqltbl_arr['date_change'],0,1))>0?gmdate('Y.m.d H:i:s',strtotime($sqltbl_arr['date_change'])+$offset*60*60):'');
+	$sqltbl_arr['date']= date('Y.m.d H:i:s',strtotime($sqltbl_arr['date']));
+	$sqltbl_arr['date_change']= ((int)(substr($sqltbl_arr['date_change'],0,1))>0?date('Y.m.d H:i:s',strtotime($sqltbl_arr['date_change'])):'');
 	
 	$table .= "
 	<tr>

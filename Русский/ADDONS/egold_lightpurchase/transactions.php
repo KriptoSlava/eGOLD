@@ -25,7 +25,7 @@ if(!isset($transaction)){exit_now();}
 //убираем дубли пинов в транзакциях для проверки в бд
 foreach ($transaction as $key => $value)if(!isset($pin_check[$value['pin']]))$pin_check[$value['pin']]=1;
 if(isset($pin_check)){	
-	$mysqli_connect = mysqli_connect($host_db_lightpurchase,$database_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db2");
+	$mysqli_connect = mysqli_connect($host_db_lightpurchase,$user_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db2");
 	function exit_now(){if(isset($mysqli_connect))mysqli_close($mysqli_connect);exit;}
 	
 	//проверяем, есть ли такой пин для зачисления средств
