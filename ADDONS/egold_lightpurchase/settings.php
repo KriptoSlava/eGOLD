@@ -1,4 +1,4 @@
-<?php //version 1.2
+<?php //version 1.3
 //All files of the supplement for automatic accepting incoming transactions should be located in the folder /egold_lightpurchase/ of the website root and the file for node settings egold_settings.php with the folder /egold_crypto/ should be located in the website root
 //You can check the operation of the addon by running index.php file opening its URL in the address bar of the browser: http://[site]/egold_lightpurchase/index.php
 //To embed an automatic wallet registration form under your wallet in the site page, you need to tag the code from index.php so, that it is:
@@ -24,7 +24,6 @@ $type['details']="0-9";//Filter on the input data in the registration form, you 
 //English uppercase:  ABCDEFGHIJKLMNOPQRSTUVWXYZ
 //To insert characters, they must be shielded, putting in front of each character backslash: \,\.\[\]\-\_\(\)\+\=\:\;\#\%\?
 
-$offset= 3;//Time zone with digit only
 $profit_percent= 5;//Percentage of profit
 
 //Users who have access to processing transactions in a line with a unique password for each user: $password['name_only_English_letters']='password_any_letters_numbers_characters';

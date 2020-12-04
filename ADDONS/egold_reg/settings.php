@@ -1,4 +1,4 @@
-<?php //version 1.2
+<?php //version 1.3
 //All files of the supplement for automatic registration of wallets should be located in the folder /egold_reg/ of the website root and the file for node settings egold_settings.php with the folder /egold_crypto/ should be located in the website root
 //You can check the operation of the addon by running index.php file opening its URL in the address bar of the browser: http://[site]/egold_reg/index.php
 //To embed an automatic wallet registration form under your wallet in the site page, you need to tag the code from index.php so, that it is:

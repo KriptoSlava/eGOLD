@@ -12,7 +12,7 @@ if(isset($_SESSION['password']) && isset($_REQUEST['id_checked']) && $_REQUEST['
 		)){
 		$user= array_search($_SESSION['password'], $password);
 		if($user){
-			$mysqli_connect = mysqli_connect($host_db_lightpurchase,$database_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db");
+			$mysqli_connect = mysqli_connect($host_db_lightpurchase,$user_db_lightpurchase,$password_db_lightpurchase,$database_db_lightpurchase) or die("error_connect_db");
 			
 			function query_bd($query){
 				global $mysqli_connect,$sqltbl;

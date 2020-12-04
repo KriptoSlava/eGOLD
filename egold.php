@@ -1,5 +1,5 @@
 <?php
-$version= '1.31';
+$version= '1.32';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -555,7 +555,7 @@ if($stop!=1){
 						$recipient_balance= $recipient['balance']+$recipient['percent_ref']+$recipient_percent+$sqltbl_arr['money'];
 						query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `balance`='".$recipient_balance."',`percent_ref`=0,`date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`),`date_ref`=`date`,`view`=IF(`view`=1,3,`view`) WHERE `wallet`='".$recipient['wallet']."';");
 					} else if($sqltbl_arr['signpubreg'] && $sqltbl_arr['signreg']){
-						query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$sqltbl_arr['recipient']."',`ref1`= '".$wallet['wallet']."',`ref2`= '".$wallet['ref1']."',`ref3`= '".$wallet['ref2']."',`balance`= '3',`height`= '0',`date` = '".$sqltbl_arr['date']."',`percent_ref`=0,`date_ref`=`date`,`signpub`= '".$sqltbl_arr['signpubreg']."',`sign`= '".$sqltbl_arr['signreg']."',`checkwallet`='".$json_arr['time']."',`view`=3;");
+						query_bd("INSERT IGNORE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `wallet`= '".$sqltbl_arr['recipient']."',`ref1`= '".$wallet['wallet']."',`ref2`= '".$wallet['ref1']."',`ref3`= '".$wallet['ref2']."',`balance`= '".$sqltbl_arr['money']."',`height`= '0',`date` = '".$sqltbl_arr['date']."',`percent_ref`=0,`date_ref`=`date`,`signpub`= '".$sqltbl_arr['signpubreg']."',`sign`= '".$sqltbl_arr['signreg']."',`checkwallet`='".$json_arr['time']."',`view`=3;");
 					}
 					query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='".($sqltbl_arr['nodaown']==1?$sqltbl_arr['nodause']:'')."',`nodause`='".$sqltbl_arr['nodause']."',`balance`='".$wallet_balance."',`percent_ref`=0,`height`='".$sqltbl_arr['height']."',`date`=IF(`date`<'".$sqltbl_arr['date']."','".$sqltbl_arr['date']."',`date`),`date_ref`=`date`,`view`=IF(`view`=1,3,`view`), `signpubnew`='".$sqltbl_arr['signpubnew']."',`signnew`='".$sqltbl_arr['signnew']."',`signpub`='".$sqltbl_arr['signpub']."',`sign`='".$sqltbl_arr['sign']."' WHERE `wallet`='".$wallet['wallet']."';");
           if(mysqli_affected_rows($mysqli_connect)>=1){
@@ -701,7 +701,7 @@ if($stop!=1){
           else $nodaown=0;
         }
         if($request['recipient']==1)$recipient['wallet']=1;
-        else if($request['money']==3 && isset($request['signpubreg']) && isset($request['signreg']) && signcheck($wallet['wallet'].'00'.$request['money'].$request['pin'].$request['height'].$nodause.$request['signpubreg'].$request['signreg'].(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew'].$request['signnew']:''),$request['signpub'],$request['sign'])==1 && signcheck('30'.sha_dec($request['signpubreg']),$request['signpubreg'],$request['signreg'])==1){
+        else if(isset($request['signpubreg']) && isset($request['signreg']) && signcheck($wallet['wallet'].'00'.$request['money'].$request['pin'].$request['height'].$nodause.$request['signpubreg'].$request['signreg'].(isset($request['signpubnew']) && isset($request['signnew'])?$request['signpubnew'].$request['signnew']:''),$request['signpub'],$request['sign'])==1 && signcheck('30'.sha_dec($request['signpubreg']),$request['signpubreg'],$request['signreg'])==1){
           if($request['recipient']=='00'){
             function genwallet(){
               global $sqltbl,$mysqli_connect;
