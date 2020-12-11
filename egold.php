@@ -15,14 +15,16 @@ header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 $json_arr['timer_start']=microtime(true);
-$delay_timer=0;
-if(isset($_SESSION['timer_start']) && $_SESSION['timer_start']>0){
-	$delay_timer_start= $json_arr['timer_start']-$_SESSION['timer_start'];
-	if($delay_timer_start<0.5){echo '{"error":"delay"}';exit;}
-	else if($delay_timer_start<0.1)$delay_timer= 0.1-$delay_timer_start;
+if(isset($_REQUEST['type']) && $_REQUEST['type']!="send"){
+	$delay_timer=0;
+	if(isset($_SESSION['timer_start']) && $_SESSION['timer_start']>0){
+		$delay_timer_start= $json_arr['timer_start']-$_SESSION['timer_start'];
+		if($delay_timer_start<-1){echo '{"error":"delay"}';exit_now();}
+		else if($delay_timer_start<0.1)$delay_timer= 0.1-$delay_timer_start;
+	}
+	$_SESSION['timer_start']=$json_arr['timer_start']+$delay_timer;
+	if($delay_timer>0)usleep($delay_timer*1000000);
 }
-$_SESSION['timer_start']=$json_arr['timer_start']+$delay_timer;
-if(!isset($_SESSION['timer_start']) || !($_SESSION['timer_start']>0)){echo '{"error":"session"}';exit;}
 function delay_now(){usleep(mt_rand(0.0001*1000000,0.01*1000000));}
 delay_now();
 include __DIR__ .'/egold_settings.php';
@@ -105,7 +107,6 @@ if(!file_exists($dir_temp_index) || !(fileperms($dir_temp)>=16832)){
 	if(file_exists($dir_temp) && !file_exists($dir_temp_index))file_put_contents($dir_temp_index, "");
 	if(!file_exists($dir_temp_index) || !(fileperms($dir_temp)>=16832)){echo '{"message": "Required to allow writing rights for a dir folder: '.$dir_temp.'"}';exit;}
 }
-if($delay_timer>0)usleep($delay_timer*1000000);
 if(isset($_REQUEST['type']) && $_REQUEST['type']=="balanceall"){
 	foreach(glob($GLOBALS['dir_temp']."/balanceall_*") as $file){echo '{"balanceall": "'.str_replace("balanceall_", "", basename($file)).'"}';exit;}
 	echo '{"balanceall": "0"}';
