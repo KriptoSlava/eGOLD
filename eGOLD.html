@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eGOLD E1.32</title>
+  <title>eGOLD E1.33</title>
   <script>
     !function(e,t){if("function"==typeof define&&define.amd)define(["module","exports"],t);else if("undefined"!=typeof exports)t(module,exports);else{var n={exports:{}};t(n,n.exports),e.autosize=n.exports}}(this,function(e,t){"use strict";var n,o,p="function"==typeof Map?new Map:(n=[],o=[],{has:function(e){return-1<n.indexOf(e)},get:function(e){return o[n.indexOf(e)]},set:function(e,t){-1===n.indexOf(e)&&(n.push(e),o.push(t))},delete:function(e){var t=n.indexOf(e);-1<t&&(n.splice(t,1),o.splice(t,1))}}),c=function(e){return new Event(e,{bubbles:!0})};try{new Event("test")}catch(e){c=function(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!1),t}}function r(r){if(r&&r.nodeName&&"TEXTAREA"===r.nodeName&&!p.has(r)){var e,n=null,o=null,i=null,d=function(){r.clientWidth!==o&&a()},l=function(t){window.removeEventListener("resize",d,!1),r.removeEventListener("input",a,!1),r.removeEventListener("keyup",a,!1),r.removeEventListener("autosize:destroy",l,!1),r.removeEventListener("autosize:update",a,!1),Object.keys(t).forEach(function(e){r.style[e]=t[e]}),p.delete(r)}.bind(r,{height:r.style.height,resize:r.style.resize,overflowY:r.style.overflowY,overflowX:r.style.overflowX,wordWrap:r.style.wordWrap});r.addEventListener("autosize:destroy",l,!1),"onpropertychange"in r&&"oninput"in r&&r.addEventListener("keyup",a,!1),window.addEventListener("resize",d,!1),r.addEventListener("input",a,!1),r.addEventListener("autosize:update",a,!1),r.style.overflowX="hidden",r.style.wordWrap="break-word",p.set(r,{destroy:l,update:a}),"vertical"===(e=window.getComputedStyle(r,null)).resize?r.style.resize="none":"both"===e.resize&&(r.style.resize="horizontal"),n="content-box"===e.boxSizing?-(parseFloat(e.paddingTop)+parseFloat(e.paddingBottom)):parseFloat(e.borderTopWidth)+parseFloat(e.borderBottomWidth),isNaN(n)&&(n=0),a()}function s(e){var t=r.style.width;r.style.width="0px",r.offsetWidth,r.style.width=t,r.style.overflowY=e}function u(){if(0!==r.scrollHeight){var e=function(e){for(var t=[];e&&e.parentNode&&e.parentNode instanceof Element;)e.parentNode.scrollTop&&t.push({node:e.parentNode,scrollTop:e.parentNode.scrollTop}),e=e.parentNode;return t}(r),t=document.documentElement&&document.documentElement.scrollTop;r.style.height="",r.style.height=r.scrollHeight+n+"px",o=r.clientWidth,e.forEach(function(e){e.node.scrollTop=e.scrollTop}),t&&(document.documentElement.scrollTop=t)}}function a(){u();var e=Math.round(parseFloat(r.style.height)),t=window.getComputedStyle(r,null),n="content-box"===t.boxSizing?Math.round(parseFloat(t.height)):r.offsetHeight;if(n<e?"hidden"===t.overflowY&&(s("scroll"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight):"hidden"!==t.overflowY&&(s("hidden"),u(),n="content-box"===t.boxSizing?Math.round(parseFloat(window.getComputedStyle(r,null).height)):r.offsetHeight),i!==n){i=n;var o=c("autosize:resized");try{r.dispatchEvent(o)}catch(e){}}}}function i(e){var t=p.get(e);t&&t.destroy()}function d(e){var t=p.get(e);t&&t.update()}var l=null;"undefined"==typeof window||"function"!=typeof window.getComputedStyle?((l=function(e){return e}).destroy=function(e){return e},l.update=function(e){return e}):((l=function(e,t){return e&&Array.prototype.forEach.call(e.length?e:[e],function(e){return r(e)}),e}).destroy=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],i),e},l.update=function(e){return e&&Array.prototype.forEach.call(e.length?e:[e],d),e}),t.default=l,e.exports=t.default});
     <!-- Копирование в буфер обмена -->
@@ -2261,6 +2261,10 @@ new WOW().init();
 }
 .error_log_add{
 	margin-top:5px;
+}
+.noda_choose{
+	cursor: pointer;
+	text-decoration: underline;
 }
 @charset "UTF-8";
 .header-login .row-info .block-money,
@@ -9952,6 +9956,21 @@ function localStorage_clean(){
 	if(typeof(localStorage.getItem('eGOLD_typewallettime_different'))!= undefined)localStorage.removeItem('eGOLD_typewallettime_different');
 	if(typeof(localStorage.getItem('eGOLD_offset'))!= undefined)localStorage.removeItem('eGOLD_offset');
 }
+//перемешивание массива
+function shuffle(array) {
+  array.sort(() => Math.random() - 0.5);
+}
+//удаление элемента из массива
+Array.prototype.remove = function() {
+	var what, a = arguments, L = a.length, ax;
+	while (L && this.length) {
+		what = a[--L];
+		while ((ax = this.indexOf(what)) !== -1) {
+			this.splice(ax, 1);
+		}
+	}
+	return this;
+};
 //качание поля input и подсветка красным
 function errorInput(id){
 	$(id).css("-webkit-animation", "none");
@@ -9971,6 +9990,25 @@ function errorInput(id){
 		$(id).css("animation-duration", "4s");
 	};
 	demoStart();
+	if(id== "#wallet")$('#error_log').html("<div>Wallet does not exist or not synchronized</div>");
+	else if(id== "#ip"){
+		spare_nodes= '';
+		if(typeof(localStorage.getItem('eGOLD_nodes'))!= undefined && localStorage.getItem('eGOLD_nodes')){
+			if(IsJsonString(localStorage.getItem('eGOLD_nodes'))){
+				json_nodes= JSON.parse(localStorage.getItem('eGOLD_nodes'));
+				if(json_nodes.length> 0){
+					json_nodes.remove($("#ip").val());
+					shuffle(json_nodes);
+					var nodes_str= '';
+					for(var i=0;i<5 && i<(json_nodes.length-1) && typeof(json_nodes[i])!= "undefined" && json_nodes[i];i++)nodes_str += (i>0?', ':'') + '<span class="noda_choose" onclick="$(\'#ip\').val(\''+json_nodes[i]+'\')">'+json_nodes[i]+'</span>';
+					spare_nodes= ". Please select another one:</div><div class='error_log_add'>"+nodes_str;
+				}
+			}
+		}
+		$('#error_log').html("<div>Noda does not exist or is not currently available"+spare_nodes+"</div>");
+	} 
+	if($('#error_log').html())$('#error_log').show();
+	else $('#error_log').hide();
 }
 //подсветка поля input зелёным
 function nowInput(id){
@@ -10056,6 +10094,8 @@ function login(){
 			new QRCode(document.getElementsByClassName("img-qr-code")[0], json_typewallet.wallet);
 			//загружаем транзакции по кошельку
 			page_transactions('');
+			//сохраняем доступные ноды
+			saveNodes();
 		}
 	}
 }
@@ -10158,12 +10198,11 @@ function saveTypeWallet(wallet,ip,id,password){
 				login();
 			}else {
 				if(return_view=='wallet')errorInput('#wallet');
-				else if(return_view=='ip'){errorInput('#ip');}
+				else if(return_view=='ip')errorInput('#ip');
 			}
 			//сдвигаем проверку на 10 секунд
 			if(return_view=='ip' && typeof(localStorage.getItem('eGOLD_typewallettime'))!= undefined && ((time_now-parseInt(localStorage.getItem('eGOLD_typewallettime')))>60 || time_now<parseInt(localStorage.getItem('eGOLD_typewallettime')))){
 				localStorage.setItem('eGOLD_typewallettime',(time_now-50));
-			} else {
 			}
 			//если запрос со страницы настроек на смену IP
 			if(id=='saveNode'){
@@ -10322,6 +10361,33 @@ function saveEmailUpDown(){
 		});
 	}
 }
+//сохранение списка доступных нод
+function saveNodes(){
+	var json_typewallet= json_typewallet_arr();
+	if(!json_typewallet){errorAllDisplay();return false;}
+	else{
+		return_view= '';
+		$.ajax({
+			url: "http://"+json_typewallet.noda+"/egold.php",
+			method: 'POST',
+			timeout: 10000,
+			async:true,
+			data: "type=nodas",
+			success: function success(data) {
+				if(!data || !IsJsonString(data))return_view= 'ip';
+				else json_nodes= JSON.parse(data);
+				if(typeof(json_nodes)== "undefined" || !json_nodes || typeof(json_nodes[0].noda)== "undefined")return_view= 'ip';
+				else {
+					var nodes = [];
+					for(var i=0;i<(json_nodes.length-1) && typeof(json_nodes[i].noda)!= "undefined";i++)nodes.push(json_nodes[i].noda);
+					localStorage.setItem('eGOLD_nodes',JSON.stringify(nodes));
+					return_view= 1;
+				}
+			},
+			error: function error(data){return_view= 'ip';}
+		});
+	}
+}
 //функция проверки почты
 function validateEmail(email) {
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -10366,14 +10432,7 @@ $('.but_reg').click(function(){
 		} else errorInput('#ip');
 	}
 	if(version_check_true>0){
-		check= saveTypeWallet($('#wallet').val(),noda_ip_check,'','');
-		if(check=='wallet')errorInput('#wallet');
-		else if(check=='ip')errorInput('#ip');
-		else {
-			$('#error_log').hide();
-			$('#error_log').html('');
-			noda_ip_check= '';
-		}
+		saveTypeWallet($('#wallet').val(),noda_ip_check,'','');
 	} else version_check_true= 2;
 })
 $('#wallet, #ip').keypress(function(event){
@@ -10786,8 +10845,8 @@ function page_referral_new(interval){
 								time_percent= parseInt(parseInt(Date.now()/1000)-parseInt(json_referral[i].date));
 								if(time_percent>315360000)time_percent= 315360000;
 								if(time_percent>0){
-									if(json_referral[i].noda==json_referral[i].nodause) balance_percent= refbalance*(Math.pow(1.0000000192901,time_percent)-1);//5%
-									else balance_percent= refbalance*(Math.pow(1.0000000154321,time_percent)-1);//4%
+									if(json_referral[i].noda==json_referral[i].nodause) balance_percent= refbalance*(Math.pow(1.000000019290,time_percent)-1);//5%
+									else balance_percent= refbalance*(Math.pow(1.000000015432,time_percent)-1);//4%
 								}
 								balance_percent= parseInt(balance_percent);
 							} else refbalance=0;
@@ -11156,9 +11215,23 @@ function send(recipient,money,pin,secretKey,secretKeyReg,secretKeyNew,password){
 				errorAllDisplay();
 				menuPages('page-settings');
 				errorInput('#IPnodaSettings');
-				$('#error_log').html("<div>The node is not activated</div><div class='error_log_add'>Activated nodes: <a href='http://"+nodause+"/egold.php?type=nodas' title='Working active nodes in the database of the current node' target='_blank'>http://"+nodause+"/egold.php?type=nodas</a></div>");
+				spare_nodes= '';
+				if(typeof(localStorage.getItem('eGOLD_nodes'))!= undefined && localStorage.getItem('eGOLD_nodes')){
+					if(IsJsonString(localStorage.getItem('eGOLD_nodes'))){
+						json_nodes= JSON.parse(localStorage.getItem('eGOLD_nodes'));
+						if(json_nodes.length> 0){
+							json_nodes.remove($("#IPnodaSettings").val());
+							shuffle(json_nodes);
+							var nodes_str= '';
+							for(var i=0;i<5 && i<(json_nodes.length-1) && typeof(json_nodes[i])!= "undefined" && json_nodes[i];i++)nodes_str += (i>0?', ':'') + '<span class="noda_choose" onclick="$(\'#IPnodaSettings\').val(\''+json_nodes[i]+'\')">'+json_nodes[i]+'</span>';
+							spare_nodes= ". Please select another one:</div><div class='error_log_add'>"+nodes_str;
+						}
+					}
+				}
+				if(!spare_nodes) spare_nodes= ". Activated nodes:</div><div class='error_log_add'><a href='http://"+nodause+"/egold.php?type=nodas' title='Working active nodes in the database of the current node' target='_blank'>http://"+nodause+"/egold.php?type=nodas</a>";
+				$('#error_log').html("<div>The node is not activated"+spare_nodes+"</div>");
 				$('#error_log').show();
-				return false;
+				return 'ip';
 			}
 			else if(typeof(json_send.signpubnew_check)!= "undefined" && json_send.signpubnew_check=='false'){errorAllDisplay();return 'signnew';}
 			else if(signpubreg && typeof(json_send.recipient)!= "undefined" && json_send.recipient=='false'){errorAllDisplay();return 'signreg';}
@@ -11260,6 +11333,7 @@ $("#btnSendMoney").click(function () {
 		setTimeout(function () {
 			check= send(recipient,money,pin,secretKey,'','','');
 			if(check=='secret'){errorInput(".secret_to");return false;}
+			else if(check=='ip'){return false;}
 			else if(check!=true && check>=0){hide_send(0);errorInput(".amout_to");$('.amout_to').val((check-2>0?check-2:''));errorInput('.money p');return false;}
 			else if(check){button_touch($('.but_send'));hide_send(0);$('.amout_to').val('');}
 		},1000);
@@ -11449,6 +11523,8 @@ function clean_filters(){
 }
 //функция выхода
 function logout(){
+	trueInput('#wallet');
+	trueInput('#ip');
 	menuPages('');
 	localStorage_clean();
 	if(typeof(localStorage.getItem('eGOLD_password'))!= undefined)localStorage.removeItem('eGOLD_password');
@@ -11457,7 +11533,7 @@ function logout(){
 	clean_filters();
 	$(".preloader-container.no-data").show();
 	if($('.block-list').html())$('.block-list').html('');
-	if(!$('.header-login').hasClass('hide')){
+	if($('.page_not_login').hasClass('hide-page')){
 		$('.header-not-logged').removeClass("hide");
 		$('.header-login').addClass("hide");
 		$('.page_not_login').addClass("show-page");
@@ -11557,7 +11633,7 @@ setInterval(function () {
 			else {
 				balance_save= parseInt(json_typewallet.balance);
 				if(time_percent>0){
-					balance_percent_4= balance_save*(Math.pow(1.0000000154321,time_percent)-1);//4%
+					balance_percent_4= balance_save*(Math.pow(1.000000015432,time_percent)-1);//4%
 					balance= balance_save+balance_percent_4;
 				} else balance= balance_save;
 			}
@@ -11566,7 +11642,7 @@ setInterval(function () {
 				if(json_typewallet.balancetransactioncheck>=0)$('.money-bonus p').html('+ ?');
 				else {
 					if(time_percent>0){
-						if(balance_percent_4>=50)bonus= parseInt(balance_save*(Math.pow(1.0000000192901,time_percent)-1)-balance_percent_4);//5%-4%
+						if(balance_percent_4>=50)bonus= parseInt(balance_save*(Math.pow(1.000000019290,time_percent)-1)-balance_percent_4);//5%-4%
 						else bonus= parseInt(balance_save*(Math.pow(1.00000000386,time_percent)-1));//1%
 					} else bonus=0;
 					$('.money-bonus p').html('+ '+number_format(bonus, 0, '.', ' '));
