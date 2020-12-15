@@ -1,5 +1,5 @@
 <?php
-$version= '1.33';
+$version= '1.34';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -15,16 +15,6 @@ header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 if(session_status()!==PHP_SESSION_ACTIVE)session_start();
 $json_arr['timer_start']=microtime(true);
-if(isset($_REQUEST['type']) && $_REQUEST['type']!="send"){
-	$delay_timer=0;
-	if(isset($_SESSION['timer_start']) && $_SESSION['timer_start']>0){
-		$delay_timer_start= $json_arr['timer_start']-$_SESSION['timer_start'];
-		if($delay_timer_start<-1){echo '{"error":"delay"}';exit_now();}
-		else if($delay_timer_start<0.1)$delay_timer= 0.1-$delay_timer_start;
-	}
-	$_SESSION['timer_start']=$json_arr['timer_start']+$delay_timer;
-	if($delay_timer>0)usleep($delay_timer*1000000);
-}
 function delay_now(){usleep(mt_rand(0.0001*1000000,0.01*1000000));}
 delay_now();
 include __DIR__ .'/egold_settings.php';
@@ -69,31 +59,37 @@ else{
 	if($host_ip!=$noda_ip){
 		$host_ip=preg_replace("/[^0-9a-z.:]/",'',$host_ip);
 		$host_ip=convert_ipv6($host_ip);
-		$ddos_check_file_tmp= $GLOBALS['dir_temp']."/ddos_";
-		foreach(glob($ddos_check_file_tmp."*") as $file){
-			$ddos_check= (int)str_replace($ddos_check_file_tmp, "",$file);
-			if($ddos_check>=10000){echo '{"noda": "timeout"}';exit;}
-			$ddos_check++;
-			$ddos_check_file= $ddos_check_file_tmp.$ddos_check;
-			if(@rename($file, $ddos_check_file)!== true)unset($ddos_check_file);
-			break;
-		}
-		if(!isset($ddos_check_file)){
-			$ddos_check_file= $ddos_check_file_tmp."1";
-			if(!file_exists($ddos_check_file))file_put_contents($ddos_check_file, "");
-		}
-		$host_ip_check_file_tmp= $GLOBALS['dir_temp']."/ip_".$host_ip."_";
-		foreach(glob($host_ip_check_file_tmp."*") as $file){
-			$host_ip_check= (int)str_replace($host_ip_check_file_tmp, "",$file);
-			if($host_ip_check>=32){echo '{"noda": "timeout"}';exit;}
-			$host_ip_check++;
-			$host_ip_check_file= $host_ip_check_file_tmp.$host_ip_check;
-			if(@rename($file, $host_ip_check_file)!== true)unset($host_ip_check_file);
-			break;
-		}
-		if(!isset($host_ip_check_file)){
-			$host_ip_check_file= $host_ip_check_file_tmp."1";
-			if(!file_exists($host_ip_check_file))file_put_contents($host_ip_check_file, "");
+		if(!isset($argv[1]) || $argv[1]!="synch"){
+			if(!isset($_REQUEST['type']) || $_REQUEST['type']!="send"){
+				$ddos_check_file_tmp= $GLOBALS['dir_temp']."/ddos_";
+				foreach(glob($ddos_check_file_tmp."*") as $file){
+					$ddos_check= (int)str_replace($ddos_check_file_tmp, "",$file);
+					$ddos_check_test= (time()-@filemtime($file)+100)/$ddos_check;
+					$ddos_check++;
+					$ddos_check_file= $ddos_check_file_tmp.$ddos_check;
+					if(@rename($file, $ddos_check_file)!== true)unset($ddos_check_file);
+					if($ddos_check_test<0.01){echo '{"error": "ddos"}';exit;}
+					break;
+				}
+				if(!isset($ddos_check_file)){
+					$ddos_check_file= $ddos_check_file_tmp."1";
+					if(!file_exists($ddos_check_file))file_put_contents($ddos_check_file, "");
+				}
+			}
+			$host_ip_check_file_tmp= $GLOBALS['dir_temp']."/ip_".$host_ip."_";
+			foreach(glob($host_ip_check_file_tmp."*") as $file){
+				$host_ip_check= (int)str_replace($host_ip_check_file_tmp, "",$file);
+				$host_ip_check_test= (time()-@filemtime($file)+5)/$host_ip_check;
+				$host_ip_check++;
+				$host_ip_check_file= $host_ip_check_file_tmp.$host_ip_check;
+				if(@rename($file, $host_ip_check_file)!== true)unset($host_ip_check_file);
+				if($host_ip_check_test<1){echo '{"error": "timeout"}';exit;}
+				break;
+			}
+			if(!isset($host_ip_check_file)){
+				$host_ip_check_file= $host_ip_check_file_tmp."1";
+				if(!file_exists($host_ip_check_file))file_put_contents($host_ip_check_file, "");
+			}
 		}
 	}
 }
@@ -142,9 +138,31 @@ if(isset($_REQUEST['type']) && ($_REQUEST['type']=="send" || $_REQUEST['type']==
 		if(isset($_REQUEST['wallet']) && $_REQUEST['wallet']>0 && isset($_REQUEST['height']) && $_REQUEST['height']>=0 && isset($_REQUEST['recipient']) && $_REQUEST['recipient'] && isset($_REQUEST['money']) && $_REQUEST['money'] && isset($_REQUEST['pin']) && $_REQUEST['pin']>=0 && isset($_REQUEST['signpub']) && $_REQUEST['signpub'] && isset($_REQUEST['sign']) && $_REQUEST['sign']){
 			$filename_tmp_send= $dir_temp.'/'.$_REQUEST['wallet'].'_'.$_REQUEST['height'].'_'.hash('sha256', $_REQUEST['wallet'].$_REQUEST['height'].$_REQUEST['recipient'].$_REQUEST['money'].$_REQUEST['pin'].(isset($_REQUEST['signpubreg'])?$_REQUEST['signpubreg']:'').(isset($_REQUEST['signreg'])?$_REQUEST['signreg']:'').(isset($_REQUEST['signpubnew'])?$_REQUEST['signpubnew']:'').(isset($_REQUEST['signnew'])?$_REQUEST['signnew']:'').$_REQUEST['signpub'].$_REQUEST['sign']);
 			if(file_exists($filename_tmp_send)){echo '{"send": "false"}';exit;}
-		} else {echo '{"send": "false"}';exit;}
+		} else {
+			if(isset($host_ip_check_file)){
+				$host_ip_check_file_block= $host_ip_check_file_tmp.($host_ip_check+60);
+				@rename($host_ip_check_file, $host_ip_check_file_block);
+			}
+			echo '{"send": "false"}';exit;
+		}
 	} else if(file_exists($filename_tmp_synch)){echo '{"synch":"now"}';exit;}
-}
+	include __DIR__ .'/egold_crypto/falcon.php';
+	function bchexdec($hex){
+		$dec = 0; $len = strlen($hex);
+		for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
+		return $dec;
+	}
+	function sha_dec($str){return substr(bchexdec(gen_sha3($str,19)),0,19);}
+	function signcheck($str,$signpub,$sign){return ($signpub && $str && $sign && Falcon\verify($signpub, $str, $sign))? 1: 0;}
+	if($_REQUEST['type']=="send"){
+		if(isset($_REQUEST['signpubnew_check']) && $_REQUEST['signpubnew_check']){
+			if(signcheck($_REQUEST['wallet'].$_REQUEST['height'],$_REQUEST['signpubnew_check'],$_REQUEST['signnew'])!=1){
+				echo '{"signpubnew_check": "false"}';
+				exit;
+			} else $json_arr['signpubnew_check']= 'true';
+		}
+	}
+} else include __DIR__ .'/egold_crypto/SHA3.php';
 if($email_domain && !function_exists('mail')){$email_domain= '';}
 $limit_synch= 250;
 $percent_4= 4;
@@ -171,7 +189,7 @@ if(!isset($prefix_db) || !$prefix_db)$prefix_db='egold';
 if(isset($noda_trust))foreach($noda_trust as $key=> $val)if(!$val || (!filter_var($val, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && !filter_var($val, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)))unset($noda_trust[$key]);
 if(!isset($noda_trust) || count($noda_trust)<3){echo '{"error": "noda_trust minimum 3 nodas in egold_settings.php"}';exit;}
 if(($key=array_search($noda_ip,$noda_trust)) !== FALSE){array_splice($noda_trust, $key, 1);}
-$stop=0;
+
 $mysqli_connect= mysqli_connect($host_db,$user_db,$password_db,$database_db) or die("error_connect_bd");
 function exit_now(){if(isset($mysqli_connect))mysqli_close($mysqli_connect);exit;}
 function query_bd($query){
@@ -350,7 +368,6 @@ $type['height']="0-9";
 $type['signpubnew']="0-9";
 $type['signpub']="0-9a-z";
 $type['signpubreg']=$type['signpub'];
-$type['signpubnew_check']=$type['signpub'];
 $type['sign']="0-9a-z:";
 $type['signnew']=$type['sign'];
 $type['signreg']=$type['sign'];
@@ -380,20 +397,7 @@ $type['email']="0-9";
 $type['wallets_with_noda_first']="1";
 $type['synch_wallet']="0-9";
 foreach($_REQUEST as $key=> $val) if(strlen($key)<100 && $val && strlen($val)<1440 && in_array($key,array_keys($type))) $request[$key]= preg_replace("/[^".$type[$key]."]/",'',$val);
-include __DIR__ .'/egold_crypto/falcon.php';
-function bchexdec($hex){
-	$dec = 0; $len = strlen($hex);
-	for ($i = 1; $i <= $len; $i++)$dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])), bcpow('16', strval($len - $i))));
-	return $dec;
-}
-function sha_dec($str){return substr(bchexdec(gen_sha3($str,19)),0,19);}
-function signcheck($str,$signpub,$sign){return ($signpub && $str && $sign && Falcon\verify($signpub, $str, $sign))? 1: 0;}
-if(isset($request['signpubnew_check'])){
-	if(signcheck($request['wallet'].$request['height'],$request['signpubnew_check'],$request['signnew'])!=1){
-		$json_arr['signpubnew_check']= 'false';
-		$stop=1;
-	} else $json_arr['signpubnew_check']= 'true';
-}
+$stop=0;
 if(isset($request['email']) && isset($request['password'])){
 	function intToChar($str){
 		$intStr= str_split($str, 4);
@@ -846,7 +850,13 @@ if($stop!=1){
               }
             } else $json_arr['transaction']= 'false';
           } else $json_arr['wallet']= 'false';
-        } else $json_arr['sign']= 'false';
+        } else {
+					if(isset($GLOBALS['host_ip_check_file'])){
+						$GLOBALS['host_ip_check_file_block']= $GLOBALS['host_ip_check_file_tmp'].($GLOBALS['host_ip_check']+60);
+						@rename($GLOBALS['host_ip_check_file'], $GLOBALS['host_ip_check_file_block']);
+					}
+					$json_arr['sign']= 'false';
+				}
 				delay_now();
 				query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet` = (SELECT * FROM (SELECT `wallet` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`='".$request['wallet']."' and `height`='".$request['height']."' and `hash`='".$request_sha."' and `recipient`='' LIMIT 1) as t) and `height`='".$request['height']."' and `hash`='".$request_sha."' and `recipient`='';");
       }
@@ -1456,10 +1466,10 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
   } else $skip=1;
 	if($skip!=1){
 		query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`= '".$json_arr['time']."' WHERE `name`= 'synch_now';");
+		$rand_time= mt_rand(5,15);
 		foreach(glob($GLOBALS['dir_temp']."/*") as $file){if(file_exists($file)){
-				if(strpos($file, '/ip_') !== FALSE)@unlink($file);
-				else if(time()-@filectime($file)>50 && $file!=$dir_temp_index)@unlink($file);
-				else if(strpos($file, '/ddos_') !== FALSE && strpos($file, '/ddos_10000') === FALSE) if(@rename($file, $GLOBALS['dir_temp']."/ddos_0")!== true)@unlink($file);
+				if(time()-@filectime($file)>$rand_time && $file!=$dir_temp_index)@unlink($file);
+				else if(strpos($file, '/walletscount_') !== FALSE || strpos($file, '/balanceall_') !== FALSE || strpos($file, '/nodas') !== FALSE)@unlink($file);
 		}}
 		if(!file_exists($GLOBALS['filename_tmp_synch']))file_put_contents($GLOBALS['filename_tmp_synch'], "");
 		query_bd("SELECT SUM(`balance`) as balanceall FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` LIMIT 1;");
