@@ -350,10 +350,11 @@ COMMIT;";
 }
 if(isset($_REQUEST['type']) && $_REQUEST['type']=="synch"){
 	query_bd("SELECT `value` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` WHERE `name`='version'");
-	$sqltbl['value']= (int)str_replace('1.','',$sqltbl['value']);
-	if(!isset($sqltbl['value']) || $sqltbl['value']<(int)str_replace('1.','',$version)){
+	$version_sql= (int)str_replace('1.','',$sqltbl['value']);
+	if(!isset($version_sql) || $version_sql<(int)str_replace('1.','',$version)){
 		query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='".$version."', `name`='version';");
-		if($sqltbl['value']<35)query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='0', `name`='check_wallet';");
+		if($version_sql<35)query_bd("REPLACE INTO `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_settings` SET `value`='0', `name`='check_wallet';");
+		unset($version_sql);
 	}
 }
 $type['type']="a-z";
