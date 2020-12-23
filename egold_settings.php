@@ -28,8 +28,10 @@ $noda_trust[]= "";
 $noda_trust[]= "";
 //$noda_trust[]= "91.106.203.179";//Example of using IPv4 node address
 
-//Amount of days for keeping transaction history and history of referrals’ assessments
-$history_day= 90;
+//The transaction history is cleared when any of the following conditions are met:
+$history_day= 365;//Specified in days by an integer of at least 1. If less, then not taken into account.
+$history_size= 0;//Specified in the number of transactions with an integer of at least 1. If less, it is not taken into account.
+//Transaction retention period cannot be less 1 day, even if the specified number of transactions is exceeded. The number of transactions to delete is configured, not the size in megabytes, due to the impossibility of accurately determining the exact size of the database at any given time due to compression, indexing and caching in MySQL. However, the quantity helps to empirically find the correct size of the database.
 
 //In order to set automatic sending of notifications to emails according to transactions of users dealing with a certain node you should link your domain to hosting and specify it below, e.g. egold.pro. Hosting should support php function mail(). For proper email notification system operating, you need a domain not higher than of a second level. What is it and how to get it you may find on the Internet.
 //To verify support for the mail() function, after the domain fits into the $email_domain parameter, make a request in the browser http://[ip_ address_nodes]/egold.php and if there is a parameter email_domain with your domain, then the function works.
@@ -47,7 +49,4 @@ $email_delay= 0.1;
 //In any case, node operating requires IP address
 $noda_site= "";
 //$noda_site= "https://www.egold.pro";//Example
-
-//Ddos protection in the form of node blocking in case the given amount of connections over 9 seconds is exceeded
-$ddos_protect= 1000;
 ?>
