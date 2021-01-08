@@ -1,5 +1,5 @@
 <?php
-$version= '1.36';
+$version= '1.37';
 $error_log= 0;//=0 or =1 for egold_error.log
 ini_set("memory_limit", "2048M");
 if($error_log==1){
@@ -500,7 +500,7 @@ if($stop!=1 && ($request['type']=="height" || ($request['type']=="send" && $json
   else $nodause= $noda_ip;
   $wallet= wallet($request['wallet'],$json_arr['time'],0);
   if(isset($wallet['height']) && isset($wallet['date']) && isset($wallet['view']) && ($wallet['view']==1 || $wallet['view']==3)){
-    $json_arr['balance']= $wallet['balance']+($wallet['noda'] && $wallet['noda']==$noda_ip?$wallet['percent_5']:$wallet['percent_4']);
+    $json_arr['balance']= $wallet['balance']+$wallet['percent_4'];
     $json_arr['height']= $wallet['height'];
     $json_arr['date']= $wallet['date'];
     query_bd("SELECT `height`,`date` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `wallet`= '".$request['wallet']."' and `checkhistory`=0 and `height`>'".$wallet['height']."' ORDER BY `height` DESC,`date` DESC LIMIT 1;");
@@ -1611,7 +1611,6 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_referrals` WHERE `wallet`= '".$sqltbl_arr['wallet']."';");
 		}
 		if((int)date("i",$json_arr['timer_start'])==51){
-			$optimize_table= 0;
 			query_bd("UPDATE `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` SET `noda`='', `view`=IF(`view`=1,3,`view`) WHERE `noda`!='' and `noda` NOT IN (SELECT * FROM (SELECT `nodause` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_wallets` WHERE `nodause`!='' and `date` > ".strtotime(date("Y-m-d H:i:00",$json_arr['time']))."-30*24*60*60 GROUP BY `nodause`) as t);");
 			if(isset($history_day) && (int)$history_day>=1)$history_day= (int)$history_day; else $history_day=0;
 			query_bd("DELETE FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `date`< ".strtotime(date("Y-m-d H:i:00",$json_arr['time']))."-1*60*60 and (`checkhistory`!=1 ".($history_day>0?"or `date`< ".strtotime(date("Y-m-d H:i:00",$json_arr['time']))." - ".$history_day."*24*60*60":'').");");
