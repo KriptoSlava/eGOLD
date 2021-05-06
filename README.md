@@ -1,6 +1,6 @@
 Начиная с версии 1.33, все изменения будут публиковаться в телеграфе: https://telegra.ph/Spisok-izmenenij-v-versiyah-eGOLD-01-08
 
-MD5 файла «eGOLD_v1.39.zip»: **B13ACD5F3AABC46BB9772235EB17E499**
+MD5 файла «eGOLD_v1.39.zip»: **A9356B331DACDC3582EE57E406F5F9B0**
 
 MD5 файла «eGOLD_v1.38.zip»: **07764EE71CE3D38B979F863E40DC7D12**
 
