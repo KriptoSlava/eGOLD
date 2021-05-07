@@ -414,9 +414,7 @@ if(isset($request['email']) && isset($request['password'])){
 	query_bd("SELECT `password` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_users` WHERE `wallet`= '".$request['wallet']."' and `nodatrue`=1 LIMIT 1;");
 	if(isset($sqltbl['password']) && gen_sha3($sqltbl['password'],256)==$request['password']){
 		$request['email']= xor_this(intToChar($request['email']),$sqltbl['password']);
-		if(filter_var($request['email'], FILTER_VALIDATE_EMAIL) === false || mysqli_real_escape_string($mysqli_connect,$request['email'])!=$request['email']){
-			$stop=1;
-		}
+		if(filter_var($request['email'], FILTER_VALIDATE_EMAIL) === false || mysqli_real_escape_string($mysqli_connect,$request['email'])!=$request['email'])$stop=1;
 	} else $stop=1;
 }
 if(isset($request['noda']) && !filter_var($request['noda'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && !filter_var($request['noda'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)){
@@ -1556,7 +1554,7 @@ if($stop!=1 && ($request['type']=="synch" || $request['type']=="send")){
 				$user_mail[$sqltbl_arr['wallet']]=$sqltbl_arr;
 			}
 			if(isset($user_mail) && isset($date_limit)){
-				$query= "SELECT `wallet`,`height`,`recipient`,`money`,`nodause`,`date`,`checkemail` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `date`>".$json_arr['time']."-7*60 and `checkhistory`=1 and `checkemail`!=3 ORDER BY `date` ASC, `wallet` ASC, `height` ASC LIMIT 10000;";
+				$query= "SELECT `wallet`,`height`,`recipient`,`money`,`nodause`,`date`,`checkemail` FROM `".$GLOBALS['database_db']."`.`".$GLOBALS['prefix_db']."_history` WHERE `date`>".$json_arr['time']."-7*60 and `wallet`!=1 and `checkhistory`=1 and `checkemail`!=3 ORDER BY `date` ASC, `wallet` ASC, `height` ASC LIMIT 10000;";
 				$result= mysqli_query($mysqli_connect,$query) or die("error_noty_check");
 				while($sqltbl_arr= mysqli_fetch_array($result,MYSQLI_ASSOC))$user_mail_wallet[$sqltbl_arr['wallet']."_".$sqltbl_arr['height']]= $sqltbl_arr;
 				if(isset($user_mail_wallet) && $user_mail_wallet && is_array($user_mail_wallet)){
